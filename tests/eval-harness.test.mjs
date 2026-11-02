@@ -5,22 +5,36 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
+import { plannedSamples } from '../evals/runner/protocol.mjs';
+
 const repo = fileURLToPath(new URL('../', import.meta.url));
 
-test('eval runner dry-run resolves every task prompt without invoking the agent', () => {
-  const result = spawnSync(process.execPath, ['evals/runner/run-eval.mjs', '--dry-run'], { cwd: repo, encoding: 'utf8' });
-  assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.match(result.stdout, /10 run\(s\) planned/);
-  assert.match(result.stdout, /No agent was invoked/);
+test('evaluation planning resolves every prompt without an installed agent or prepared bases', async () => {
+  const config = JSON.parse(await readFile(join(repo, 'evals/config.json'), 'utf8'));
+  const matrix = plannedSamples(config, [], { perCell: config.smokeRunsPerTaskPerCondition });
+  assert.equal(matrix.length, config.tasks.length * Object.keys(config.conditions).length);
+  assert.equal(new Set(matrix.map(({ task, condition }) => `${task}/${condition}`)).size, matrix.length);
+  for (const { task, condition } of matrix) {
+    const variant = join(repo, `evals/tasks/${task}.${condition}.md`);
+    const prompt = await readFile(variant, 'utf8').catch((error) => {
+      if (error.code !== 'ENOENT') throw error;
+      return readFile(join(repo, `evals/tasks/${task}.md`), 'utf8');
+    });
+    assert.match(prompt, /## Prompt\s+\S/);
+  }
 });
 
-test('prepare-bases pins condition A to the starter SDK and handles Windows PATH casing', async () => {
-  const source = await readFile(join(repo, 'evals/runner/prepare-bases.mjs'), 'utf8');
-  // Regression: @latest created an SDK 58 app against the SDK 57 starter (plan B3 requires the same SDK).
-  assert.match(source, /default@sdk-57/);
-  assert.match(source, /requires the same SDK as the starter/);
-  // Regression: setting env.PATH while Windows carries the key as "Path" silently dropped the Git Bash prefix.
-  assert.match(source, /k\.toLowerCase\(\) === 'path'/);
+test('the pinned creation prompt and protocol match the frozen comparison runtime', async () => {
+  const config = JSON.parse(await readFile(join(repo, 'evals/config.json'), 'utf8'));
+  const lockResult = spawnSync('git', ['show', `${config.protocol.sourceRevision}:starters/expo/package-lock.json`], { cwd: repo, encoding: 'utf8' });
+  assert.equal(lockResult.status, 0, lockResult.stderr);
+  const lock = JSON.parse(lockResult.stdout);
+  const prompt = await readFile(join(repo, 'evals/tasks/T1.A.md'), 'utf8');
+  assert.ok(prompt.includes(`create-expo-app@${config.protocol.createExpoApp}`));
+  assert.ok(prompt.includes(config.protocol.template));
+  assert.ok(prompt.includes(lock.packages['node_modules/expo'].version));
+  assert.ok(prompt.includes(lock.packages['node_modules/react-native'].version));
+  assert.match(config.protocol.sourceRevision, /^[a-f0-9]{40}$/);
 });
 
 test('scorer serves a production web export, not the Metro dev server', async () => {

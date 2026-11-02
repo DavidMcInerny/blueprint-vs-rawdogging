@@ -18,7 +18,9 @@ test('new packs install into a generated app without replacing its baseline and 
   assert.equal(creation.status, 0, creation.stderr);
   const original = await readFile(join(app, 'src/lib/asyncWork.ts'), 'utf8');
   const brand = await readFile(join(app, 'brand.json'), 'utf8');
-  const script = '.agents/skills/mature-app-starter/scripts/scaffold-baseline.mjs';
+  // Lean products consume the canonical machine/source registry, not copied skill trees.
+  await assert.rejects(readdir(join(app, '.agents')), { code: 'ENOENT' });
+  const script = join(repo, 'codex/skills/mature-app-starter/scripts/scaffold-baseline.mjs');
   const args = [script, '--root', '.', '--with', 'updates,diagnostics,outbox,drafts,import-review,interactions,engagement,account-recovery,notification-preferences,undo', '--only-packs'];
   const preview = run([...args, '--dry-run'], app); assert.equal(preview.status, 0, preview.stderr);
   assert.ok(!(await readdir(join(app, 'src/services'))).includes('outbox'));
