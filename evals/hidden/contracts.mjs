@@ -22,3 +22,14 @@ export async function activateFocusedFilter(page, target) {
   const space = await target.evaluate((node) => ['checkbox', 'radio'].includes(node.getAttribute('role') ?? node.getAttribute('type')));
   await page.keyboard.press(space ? 'Space' : 'Enter');
 }
+
+export function visibleItemsMatch(rowTexts, expectedTitles) {
+  if (rowTexts.length !== expectedTitles.length) return false;
+  const seen = new Set();
+  for (const text of rowTexts) {
+    const matches = expectedTitles.filter((title) => text.includes(title));
+    if (matches.length !== 1 || seen.has(matches[0])) return false;
+    seen.add(matches[0]);
+  }
+  return seen.size === expectedTitles.length;
+}

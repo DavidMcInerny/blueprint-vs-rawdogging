@@ -9,7 +9,7 @@ import { createRequire } from 'node:module';
 import { agentInvocationOutcome, assertInvocationAvailable, hashDirectory, inputIdentity, parseAgentOutput, plannedSamples, readRecords, summarizeRecords } from '../runner/protocol.mjs';
 import { neutralQuality } from '../runner/neutral-quality.mjs';
 import { remainingDemoFiles, resolvedBrandChecks } from '../runner/t1-contract.mjs';
-import { activateFocusedFilter, inspectBrandHome, tabTo } from '../hidden/contracts.mjs';
+import { activateFocusedFilter, inspectBrandHome, tabTo, visibleItemsMatch } from '../hidden/contracts.mjs';
 const require = createRequire(new URL('../hidden/package.json', import.meta.url));
 const { chromium } = require('@playwright/test');
 
@@ -92,6 +92,16 @@ test('browser contracts reject wrong home text, unreachable controls and click-o
   assert.equal(await tabTo(page, page.getByTestId('filter')), true);
   await activateFocusedFilter(page, page.getByTestId('filter'));
   assert.equal(await page.locator('body').getAttribute('data-active'), null);
+});
+
+test('a no-op category filter cannot pass on the previous equal-sized category', () => {
+  const food = ['Apple pie', 'Banana bread', 'Sourdough loaf', 'Trail mix'];
+  const tools = ['Apple corer', 'Bread knife', 'Mixing bowl', 'Pie dish'];
+  assert.equal(food.length, tools.length);
+  assert.equal(visibleItemsMatch(food, tools), false);
+  assert.equal(visibleItemsMatch([...tools].reverse(), tools), true);
+  assert.equal(visibleItemsMatch(Array(4).fill(tools.join(' ')), tools), false);
+  assert.equal(visibleItemsMatch(['Apple corer', 'Apple corer', 'Mixing bowl', 'Pie dish'], tools), false);
 });
 
 test('aggregate count cannot pass an incomplete or over-sampled task matrix', () => {
