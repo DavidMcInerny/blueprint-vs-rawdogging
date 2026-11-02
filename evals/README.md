@@ -3,6 +3,8 @@
 Implements Appendix B of the [Rev 3 delivery plan](../proposals/2026-10-29-blueprint-delivery-plan.md).
 Decisions, conditions and Gate 1 thresholds: [DECISIONS.md](DECISIONS.md).
 
+Delivery status and open harness gaps: [consolidated plan](../proposals/DELIVERY-PLAN.md), [harness ticket #5](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/5) and [execution ticket #6](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/6). Complete the recorded corrections before scored runs; the commands below describe the current harness, not a completed evaluation.
+
 ## Layout
 
 - `tasks/` — the five fixed tasks. Text after `## Prompt` is sent to the

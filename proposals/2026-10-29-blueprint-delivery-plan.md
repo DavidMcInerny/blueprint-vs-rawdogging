@@ -1,5 +1,7 @@
 # Blueprint: decision memo and delivery plan
 
+Current scope, status and work order are maintained in the [consolidated delivery plan](DELIVERY-PLAN.md) and [tracker #1](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/1). This Rev 3 memo remains the detailed design reference; its phase table is not a separate live backlog.
+
 Revision 3, 29 October 2026. This rewrites revisions 1 and 2 from the same day; Appendix G lists what changed. Evidence about the code refers to [`blueprint-vs-rawdogging`](https://github.com/Simondarcy7/blueprint-vs-rawdogging/tree/0d770675750ab62da417aee0fd230e9b7811415f) at `0d770675` and [`fullstack-app-foundation`](https://github.com/Simondarcy7/fullstack-app-foundation/tree/742ca725ff82ba84903c0c711ee0641676b34619) at `742ca725`. Nothing was built or run for this revision.
 
 ## The question

@@ -1,5 +1,7 @@
 # Phase 1 decision record
 
+Current delivery sequence and tickets: [consolidated plan](../proposals/DELIVERY-PLAN.md), [harness corrections #5](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/5) and [scored evaluation #6](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/6). The authorisation and budget boundaries below remain in force.
+
 Date: 2 November 2026. Status: **Phase 1 authorised as a standalone commitment.**
 This record settles the eight "Decisions required before Phase 1" in the
 [Rev 3 delivery plan](../proposals/2026-10-29-blueprint-delivery-plan.md) and
@@ -54,7 +56,7 @@ differences than ~30 percentage points at n=25 are inconclusive, not wins
 4. `node evals/runner/summarize.mjs` — counts, ranges, costs, Gate 1 verdict.
 5. If B wins: doc ablation (plan B5) needs a separate budget decision.
 
-Issues are disabled on the fork, so this record is the Phase 1 ticket.
+Issues were disabled when this record was written. They are now enabled; issues #5 and #6 track Phase 1 implementation and execution, while this record preserves the decisions and authorisation.
 
 ## Validation note (2 November 2026, pre-smoke)
 

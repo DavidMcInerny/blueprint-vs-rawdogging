@@ -1,5 +1,7 @@
 # Mature App Foundation
 
+**Repository delivery work:** [consolidated plan](proposals/DELIVERY-PLAN.md) and [live GitHub tracker](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/1). These track this foundation's development; app adoption starts below.
+
 **[Start every project here](docs/start-here.md).** One kickoff checklist covers motion, accessibility, recovery, data, performance and release decisions. Use the [optional feature catalogue](docs/feature-recipes.md) only for capabilities your product needs.
 
 For a working iOS/Android/web starting point:
