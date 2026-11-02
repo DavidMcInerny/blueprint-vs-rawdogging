@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState, type PropsWithChildren } from 'react';
 import { Animated, Platform, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Head from 'expo-router/head';
 import { useSegments } from 'expo-router';
 import { ScreenScaffold, ScreenHeader } from '@/foundation/blueprint-shell/components/product-ui';
-import { brand } from '@/config/app';
-import { env } from '@/config/env';
 import { useTheme } from '@/theme/ThemeProvider';
+import { ScreenMetadata } from './ScreenMetadata';
 export function Screen({
   children,
   title,
@@ -33,24 +31,7 @@ export function Screen({
   const hostOwnsInsets = useSegments().some((segment) => String(segment) === '(tabs)');
   return (
     <>
-      <Head>
-        <title>
-          {title} · {brand.name}
-        </title>
-        <meta name="description" content={description ?? brand.description} />
-        <meta
-          name="robots"
-          content={
-            publicPath && env.name === 'production' && env.siteUrl
-              ? 'index,follow'
-              : 'noindex,nofollow'
-          }
-        />
-        {publicPath && env.siteUrl ? (
-          <link rel="canonical" href={`${env.siteUrl}${publicPath}`} />
-        ) : null}
-        <meta name="theme-color" content={dark ? brand.dark.background : brand.light.background} />
-      </Head>
+      <ScreenMetadata title={title} description={description} publicPath={publicPath} dark={dark} />
       <View role={hostOwnsInsets ? undefined : 'main'} style={{ flex: 1 }}>
         <ScreenScaffold
           header={<ScreenHeader title={title} description={description} />}
