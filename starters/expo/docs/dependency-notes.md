@@ -46,3 +46,5 @@ The earlier `braces` finding is absent from this refreshed lockfile audit; `brac
 ## Golf performance follow-up
 
 Golf's reported initial JavaScript is **746,515 gzip bytes**: it passes its **750,000 hard limit** and exceeds its **620,000 target** by 126,515 bytes. Passing the hard ceiling does not meet the target. The consumer owns optimisation and its intended-release decision; this toolkit dependency change does not alter or remeasure Golf. Keep the gap in Golf's owning backlog and fork issue #8. An intended external release still needs its owner to decide whether that target is required or to record an explicit performance exception; no release approval is inferred here.
+
+The existing Golf initial-web-JavaScript target is tracked in the owning product backlog at https://github.com/Simondarcy7/golf-scoring-app/issues/48. The recorded adoption export passes its 750,000-byte hard limit while exceeding the 620,000-byte target; target optimisation remains follow-up under that existing policy, without adding a new Blueprint source-release gate. The next actual consumer release keeps its own CI, device/provider and performance decisions.
