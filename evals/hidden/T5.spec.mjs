@@ -1,6 +1,9 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { activateFocusedFilter, tabTo } from './contracts.mjs';
+import { readFile } from 'node:fs/promises';
+import { activateFocusedFilter, tabTo, visibleItemsMatch } from './contracts.mjs';
+
+const items = JSON.parse(await readFile(new URL('../fixtures/T5/supplied/items.json', import.meta.url), 'utf8'));
 
 test('search and category filter combine; empty state shows', async ({ page }) => {
   const externalRequests = [];
@@ -45,6 +48,8 @@ test('category controls are reachable and operable with the keyboard', async ({ 
     expect(await tabTo(page, filter)).toBe(true);
     await activateFocusedFilter(page, filter);
     await expect(page.getByTestId('item-row')).toHaveCount(category === 'all' ? 12 : 4);
+    const expectedTitles = items.filter((item) => category === 'all' || item.category === category).map((item) => item.title);
+    await expect.poll(async () => visibleItemsMatch(await page.getByTestId('item-row').allTextContents(), expectedTitles)).toBe(true);
   }
 });
 
