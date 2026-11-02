@@ -1,87 +1,78 @@
 # Blueprint consolidated delivery plan
 
-Updated 2 November 2026. Backlog owner: David McInerny. Live tracker: [#1](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/1).
+Updated 2 November 2026. Coordinator: David McInerny. Live checklist: [tracker #1](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/1).
 
-Execution update: the user has authorised autonomous work through the entire backlog. [Execution decisions](EXECUTION-DECISIONS.md) record the resulting scope, pilot choices, bounded run budget and parallel implementation policy. The initial status table below is a dated snapshot; linked issues hold live execution status. Later execution decisions supersede earlier phase-only and manual-checkpoint wording.
+This is the fork's single delivery plan. It consolidates Rev 3, the evaluation, the capability extraction and current consumer WIP. The linked issues contain acceptance criteria and live evidence. Older proposals are design references, not additional mandatory backlogs.
 
-This is the entry point for the fork's outstanding work. It combines the Rev 3 delivery proposal, its authorised Phase 1 experiment, and the implemented upstream capability/adoption work. GitHub issues hold live status, dependencies and completion evidence; this file holds scope, sequence and decision rules. Older proposals remain design references, not additional mandatory backlogs.
+## Current position
 
-## Current commitment and boundaries
+**Nine of sixteen work packages are complete. Seven remain open.** Source delivery [PR18](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/pull/18) is merged into fork main at `9f29f46`. Optional agent profiles were subsequently aligned with the authorised model policy at `cdfac2e`.
 
-Phase 1 remains the current authorised experiment under [the decision record](../evals/DECISIONS.md). Ten smoke runs precede the existing budget decision for the remaining forty. Doc ablation and the later condition C evaluation need their separately recorded budgets.
+Two execution lanes are active:
 
-Existing extraction work is already built. Complete its normal source review, consumer CI and delivery without making it depend on a new benchmark, package release or unrelated qualification programme. New platform investment still needs the recorded Gate 1 go decision and two committed consumers unless the owner explicitly changes that rule.
+- **Evaluation, #6:** the ten smoke samples are complete and the remaining forty are running within the recorded fifty-primary-attempt allocation. The frozen source is `749926b`, not current main. Results remain provisional until the complete matrix and unchanged Gate 1 rules are evaluated.
+- **Reference native execution, #9:** [PR19](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/pull/19) fixes a reproduced native Expo Head alert and Android build metaspace exhaustion. Its source review and focused checks passed; the existing native workflow is running at `42f42b1`. Actual consumer signed-candidate/device/provider gates remain separate and open.
 
-The open scope decision is [#2](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/2): Dave's [Rev 3 proposal](2026-10-29-blueprint-delivery-plan.md) is benchmark-first; Simon's [capability proposal](https://github.com/Simondarcy7/blueprint-vs-rawdogging/blob/635ac6b8a3128d42e4c8f2f98fc4dd81e91dd484/proposals/2026-10-29-product-capability-foundation.md) favours extraction/adoption first and packages only when useful. This consolidation preserves the current authority and makes that disagreement explicit. It does not claim either proposal has been accepted by the other owner.
+All other open packages have concrete external dependencies: upstream merge authority, consumer CI/access, real consumer adoption, or human participation and elapsed observation. Their source preparation is delivered; these missing outcomes are not satisfied by fixtures or documentation.
 
-Creating backlog issues does not start their implementation. Deferred candidates and publication/release decisions require their stated scope and owners.
+The user's [execution decisions](EXECUTION-DECISIONS.md) authorise autonomous work through the backlog, parallel `gpt-6.1-sol` agents at high effort, and continuation after recording smoke cost without an intermediate checkpoint. They supersede earlier Phase-1-only and conditional implementation wording. They do not grant access to other owners' accounts or permit invented results.
 
-## What already exists
+## Order for the remaining work
 
-| Work | Current position | Outstanding action |
-| --- | --- | --- |
-| Fork plan and evaluation harness | Branch `proposals/blueprint-delivery-plan-rev3`, committed at `1a20795` before consolidation; [upstream PR #3](https://github.com/Simondarcy7/blueprint-vs-rawdogging/pull/3) open | Bounded harness corrections and scored runs, [#5](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/5) and [#6](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/6) |
-| Evaluation data | A/B bases exist; one T3-A validation workspace passes 7/7 with production scoring; no `results/results.jsonl` or summary at consolidation | Preserve validation as harness evidence, not a scored sample |
-| Shared capabilities and UI | [Upstream draft PR #4](https://github.com/Simondarcy7/blueprint-vs-rawdogging/pull/4), head `635ac6b`; toolkit/generated-app hosted checks pass | Acceptance and integration, [#3](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/3) |
-| Real consumer adoption | Golf [draft PR #45](https://github.com/Simondarcy7/golf-scoring-app/pull/45) is open at `a678c509`; OddsBasket [PR #51](https://github.com/Simondarcy7/oddsbasket-app/pull/51) is linked by the extraction report | Consumer CI and owner delivery, [#4](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/4); OddsBasket current metadata could not be read by this connector (404) |
-| Source distribution and compatible fix | Checked source bundles, parity manifests and draft-counter fix adopted in both consumers are documented | Reuse that proof; npm publication, Renovate and breaking package upgrades remain unproven |
-| Line-ending policy | Root `.gitattributes` already exists with LF defaults and shell/binary rules | Preserve it; Windows CI, pure-Node creation and entrypoint checks remain, [#7](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/7) |
-| Earlier guidance work | Upstream PRs #1 and #2 are merged | Do not reopen them because historical branch names remain |
-
-PR #4's latest report records 300 toolkit tests, 15 starter tests, successful starter browser/native bundle CI, and 5,048 physical production lines across 41 canonical capability files. Those counts establish the reported scope, not production/native-provider readiness. Reuse [the final phase report](https://github.com/Simondarcy7/blueprint-vs-rawdogging/blob/635ac6b8a3128d42e4c8f2f98fc4dd81e91dd484/proposals/implementation-notes/phase-5-summary.md) and its linked evidence.
-
-The extraction programme's phases 1–5 are separate from Rev 3's phases 1–5. An extraction phase 5 report does not mean the Rev 3 pilot has finished.
-
-## Order of completion
-
-1. **Settle the combined scope and owners** in [#2](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/2). Confirm whether Golf and OddsBasket are the two committed pilot products; existing adoption makes them candidates, but the Phase 1 record currently names none. Record maintainer backup, support budget, surfaces/matrix and explicit publication/name/Fullstack decisions or deferrals.
-2. **Complete the existing work in two lanes.** Finish the bounded harness corrections in [#5](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/5). In parallel, complete the existing extraction acceptance [#3](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/3), unblock consumer hosted CI and finish consumer delivery [#4](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/4). Reuse passing Blueprint checks and focused consumer evidence. Do not rebuild the extracted code.
-3. **Complete the current experiment** in [#6](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/6): ten smoke runs, budget decision, remaining forty, findings and Gate 1 decision. Freeze inputs before scored runs. Changes from PR #4 must not silently alter a condition halfway through the experiment.
-4. **Address creation and release quality.** After the applicable go decision, complete pure-Node creation, version alignment and declared Windows/Linux CI in [#7](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/7). Dependency remediation [#8](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/8) can be scoped in parallel against the accepted source. With one committed consumer, finish the allowed creation fixes and stop platform expansion.
-5. **Qualify only the integrations being enabled** in [#9](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/9). Native/provider acceptance uses the exact selected consumer revisions and preview environments. It can proceed when those revisions/environments are ready; external native beta must wait for its required device/OTA evidence.
-6. **Restructure only after the investment decision.** Choose the smallest justified package/source/recipe boundaries in [#11](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/11); then complete the lean template/reference/plugin [#10](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/10) and coherent checks/journeys [#12](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/12). Complete Fullstack contract integration [#13](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/13) where the committed remote workflow needs it. These form one coherent distribution change, not eleven mandatory package projects.
-7. **Prove the selected upgrade path** in [#14](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/14): compatible and breaking changes, both consumers, migration/data/branding/fingerprint outcomes and measured adoption effort. Use existing source-fix evidence where applicable.
-8. **Finish the non-author trial and decision** in [#17](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/17). Record applicable gates and economics once, observe normal maintenance for 4–6 weeks, and review the first real upgrade and six-month outcome.
-9. **Keep additional extraction conditional.** [#15](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/15) and [#16](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/16) are ranked discovery queues. They are not prerequisites for finishing the committed pilot or reasons to keep the programme open indefinitely.
-
-## Tracked work packages
-
-Status is a snapshot at consolidation; follow each linked issue for the current state. David coordinates the fork backlog. Simon and the consumer maintainers retain their existing source, account, merge and release authority; technical executors are selected when a package starts.
-
-| Ticket | Work package | Initial status | Dependency or next decision |
+| Order | Work | Dependency and next action | Responsible party |
 | --- | --- | --- | --- |
-| [#2](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/2) | Confirm the combined delivery scope and pilot owners | ready | Ready for scoped action |
-| [#3](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/3) | Accept and integrate the existing Blueprint capability extraction | in-progress | [#2](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/2) |
-| [#4](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/4) | Complete Golf and OddsBasket adoption delivery | blocked | [#2](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/2), [#3](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/3) |
-| [#5](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/5) | Finish the Phase 1 evaluation harness before scored runs | ready | Ready for scoped action |
-| [#6](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/6) | Run Phase 1 and record the go or stop decision | blocked | [#5](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/5) |
-| [#7](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/7) | Make app creation portable across Windows and Linux | blocked | [#6](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/6) |
-| [#8](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/8) | Resolve dependency risks and release readiness gaps | ready | Ready for scoped action |
-| [#9](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/9) | Qualify native and provider integrations that products will enable | blocked | [#2](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/2), [#4](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/4) |
-| [#10](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/10) | Separate the lean app template from the reference app and agent plugin | deferred | [#7](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/7), [#2](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/2), [#6](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/6) |
-| [#11](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/11) | Package only the shared boundaries supported by real adoption | deferred | [#2](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/2), [#6](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/6), [#3](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/3), [#4](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/4) |
-| [#12](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/12) | Unify the executable checks and shared shell journeys | deferred | [#7](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/7), [#11](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/11) |
-| [#13](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/13) | Integrate the useful Fullstack App Foundation contracts | deferred | [#2](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/2), [#6](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/6), [#11](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/11) |
-| [#14](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/14) | Prove releases and upgrades in both pilot consumers | deferred | [#10](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/10), [#11](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/11), [#12](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/12), [#13](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/13) |
-| [#15](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/15) | Triage the remaining product and interaction capability candidates | deferred | [#4](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/4), [#9](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/9) |
-| [#16](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/16) | Triage identity ownership collaboration and sync candidates | deferred | [#4](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/4), [#9](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/9) |
-| [#17](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/17) | Complete the self service trial and maintenance decision | deferred | [#4](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/4), [#9](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/9), [#14](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/14) |
+| 1, parallel | #6: finish the frozen comparison and publish the decision | Continue the existing run; audit all fifty primary attempts, publish results/findings and apply unchanged thresholds. Record the planned human-review sample as missing until actually performed. | Fork coordinator; non-author human for human review |
+| 1, parallel | #9: finish the current reference native run | Inspect the existing Android/iOS run at the exact PR19 head, resolve only concrete failures, then merge the accepted correction when its relevant checks pass. This does not close product qualification. | Fork coordinator |
+| 2, parallel | #3: upstream acceptance; #4: actual consumer delivery | Upstream maintainer decides PR4. Golf account owner resolves hosted CI billing restrictions for PR45; OddsBasket owner supplies the accessible PR51/repository. Reuse accepted extraction and consumer evidence. | Upstream/consumer maintainers and account owners; David coordinates |
+| 3 | #9: qualify enabled product integrations | Use the exact selected consumer candidates and actual provider/device environments. Reuse bounded newer Golf startup evidence only for the source and paths it covers. Keep unused optional integrations deferred. | Consumer release/provider owners |
+| 4 | #13: prove real API adoption and donor disposition | Identify actual Fullstack users; apply the delivered contract/recovery kit to a real remote-consuming product. Obtain the donor owner's migration/retirement decision. | Consumer and Fullstack maintainers |
+| 5 | #14: prove the actual maintenance cycle | With consumer access and selected contracts, adopt a breaking change in both products using the delivered guarded migration; record time, data/branding preservation and runtime/rollback outcomes. Condition C requires its recorded bounded allocation before execution. | Consumer maintainers; David coordinates |
+| 6 | #17: complete the human trial and maintenance decision | A non-author performs the recorded trial. Collect actual costs/support and 4-6 weeks of normal work; review the first real upgrade and six-month outcome. Record go/narrow/archive and ownership. | Non-author participant and fork/consumer owners |
 
-A dependency means the relevant accepted result, not merely closing a ticket. A stop decision in [#6](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/6) never unlocks platform work. For conditional distributions, mark an unnecessary package or Fullstack dependency explicitly inapplicable rather than build it to satisfy the table. Required provider/device proof may run against an agreed preview revision before consumer merge; it need not wait for production rollout.
+Independent work proceeds when another lane is blocked. Account, merge, provider, human and calendar dependencies retain their actual meanings. There is no automatic paid service activation, publishing, production release or destructive cleanup in this plan.
 
-## Bounded evaluation corrections
+## Complete ticket inventory
 
-The harness is implemented, but the following gaps must be resolved together in [#5](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/5) before scored runs:
+Status below is the 2 November execution snapshot; issues are live. David coordinates all packages. Upstream and consumer maintainers retain their existing merge, account and release authority.
 
-- The prepared B manifest identifies `59cfc15-modified`, while the original plan names `0d770675`; A and B also use different Expo 57 patches. Freeze exact inputs, account for differences and record any deliberate protocol change before results exist.
-- The CLI currently requests the alias `opus` and records `opus (config)`. Pin `claude-opus-5-5` under the standing Claude policy, record the effort, and capture input identities, actual model/CLI metadata and relevant usage.
-- `--full` currently constructs all fifty cells again rather than resuming the missing forty after smoke. Resume by unique task/condition/replicate and require five valid samples in every cell.
-- The summary checks aggregate counts and treats absent token metrics as a cost-gate pass. Require complete cells and report missing cost evidence as unknown.
-- The scorer exports web, while the decision record promises native export; neutral quality measures also need implementation or an explicit pre-results scope correction.
+| Ticket | Work package | Status | Evidence or exact remaining outcome |
+| --- | --- | --- | --- |
+| [#2](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/2) | Combined scope and pilot owners | complete | Execution decisions record the combined scope, working Golf/OddsBasket pilots, authority and explicit deferrals. |
+| [#3](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/3) | Accept/integrate existing extraction | blocked | Integrated into fork main; upstream PR4 acceptance/merge remains with the maintainer; this session has pull-only upstream access. |
+| [#4](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/4) | Golf and OddsBasket adoption delivery | blocked | Golf PR45 hosted jobs fail before start on account billing; OddsBasket PR51 returns 404. Neither is reported deployed. |
+| [#5](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/5) | Phase 1 harness readiness | complete | Immutable identities, exact model, balanced cells, terminal-attempt cap, neutral checks and native exports; focused scientific review accepted. |
+| [#6](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/6) | Phase 1 results and decision | in progress | Ten valid smoke samples retained; remaining forty running. Final findings, unchanged Gate 1 decision and real human-review sample remain. |
+| [#7](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/7) | Portable Windows/Linux app creation | complete | Pure-Node installation, maintained-fork bootstrap, collision/link safety and hosted Windows/Linux proof delivered in PR18. |
+| [#8](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/8) | Dependency risks and release readiness | complete | Compatible remediation delivered; residual advisories explicitly recorded. Golf soft-budget follow-up is owning issue48, not a new release gate. |
+| [#9](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/9) | Native/provider qualification | in progress | PR19 reference runtime/build corrections under native execution; actual signed-consumer, device, OTA, payload/consent and provider outcomes remain. |
+| [#10](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/10) | Lean template, reference app and plugin | complete | Lean creation default, opt-in demo, canonical reference, machine-level plugin and shorter app instructions delivered. |
+| [#11](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/11) | Choose justified shared distribution boundaries | complete | Source packs/recipes, existing registry and plugin selected; all eleven package candidates dispositioned. No npm release selected or claimed. |
+| [#12](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/12) | Unify checks and shared journeys | complete | Canonical AST policy, timed static/unit check, separate browser shell gate and reusable failure/recovery contracts delivered. |
+| [#13](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/13) | Fullstack API contracts and migration | blocked | Checker/recovery kit and one installer delivered; actual remote-consumer adoption/users and owner-controlled donor disposition remain. |
+| [#14](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/14) | Real releases/upgrades in both pilots | blocked | Compatible source-fix evidence reused; guarded breaking migration delivered. Real two-product breaking adoption, measured cost/data/runtime proof remain. |
+| [#15](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/15) | Triage product/interaction candidates | complete | Seventeen candidates ranked with implemented equivalents and explicit conditional/deferred dispositions. |
+| [#16](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/16) | Triage identity/ownership/sync candidates | complete | Ten candidates ranked; host identity/backend ownership and real adoption acceptance remain explicit. |
+| [#17](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/17) | Self-service trial and maintenance decision | blocked | Protocol is in issue17. A non-author, actual adoption economics and elapsed observation are unavailable; none are fabricated. |
 
-Keep the existing production-export scorer and its validation evidence. Do not expand this into another controller, qualification system or repeated review loop.
+Closed triage means the candidate queue has been assessed, not that every candidate must be built. A source merge, an app launch and a qualified product release are separate outcomes.
 
-Gate 1 remains: B passes at least seven more of twenty-five runs than A; B is not worse by three or more on any task; B median tokens and wall time are at most 1.5 times A. Smaller gains remain inconclusive. The no-container Windows execution limitation stays visible with the results. Use native Windows tools/files for that Windows experiment; any later Linux execution uses a Linux-native checkout and environment.
+## Decisions and reusable evidence
+
+- **Distribution:** [source packs/recipes and the existing installer/registry](DISTRIBUTION-DECISION.md), a lean app, canonical reference and machine-level plugin. Eleven npm packages, a private registry and namespace publication are not selected. Future packaging needs actual upgrade value and publishing authority.
+- **Pilot source:** upstream extraction `635ac6b` is integrated into the fork. Its accepted source, tests and reviews are reused. Golf PR45 and inaccessible OddsBasket PR51 remain actual consumer WIP; newer Golf releases do not prove those adoption revisions.
+- **Implementation evidence:** PR18 records the coherent source acceptance, toolkit 340/340, fresh/reference static/unit and export checks, browser 15/15 lean and 30/30 reference, actual Windows/Linux creation and hosted checks. Later focused regressions are linked in their owning PRs; successful tests are not repeated because a hash changes.
+- **Release/API preparation:** [Fullstack integration](FULLSTACK-INTEGRATION.md), [upgrade readiness](UPGRADE-READINESS.md) and [consumer delivery](CONSUMER-DELIVERY.md) identify what is delivered and what still needs actual product access/outcomes.
+- **Additional capabilities:** [candidate disposition](CAPABILITY-DISPOSITION.md) ranks the remaining UX and identity work without turning all discovered ideas into commitments.
+
+## Frozen evaluation and stop rules
+
+The authorised experiment is fifty primary attempts: T1-T5, A/B, five replicates per cell, including smoke. Invoked timeouts/crashes consume their replicate; failed model outcomes are retained. Missing identity or cost evidence remains unknown. No source, prompt, model or scorer changes enter a live comparison.
+
+The experiment uses frozen source `749926b2c207af7ba3047492f500d2a9fea1dbb2`, exact `claude-opus-5-5` at high effort, sequential Windows-native execution and subscription authentication. Current main's source changes are outside this experiment. The ten-sample smoke cost/time is recorded in #6, with continuation already authorised; no new budget checkpoint is pending within the fifty-attempt cap. Doc ablation and condition C require a separately recorded bounded allocation before running.
+
+Gate 1 remains: B passes at least seven more of twenty-five runs than A; B is not worse by three or more on any task; B median tokens and wall time are at most 1.5 times A. Smaller gains are inconclusive. Publish the actual go/narrow/stop outcome even though useful source work has already been delivered. Human review and non-container Windows/cache limitations remain visible; token list-price equivalents are not subscription invoices.
+
+The earlier plan's gated platform ordering is superseded for the implementation explicitly authorised in the execution decisions. This does not turn a failed scientific result into permission for unlimited future platform investment. Existing source remains usable under its documented scope and residual risks.
 
 ## Distribution and capability coverage
 
@@ -107,14 +98,13 @@ Provider-neutral controllers do not replace a product's authentication, notifica
 
 Golf's initial JavaScript is reported at 746,515 gzip bytes, below its 750,000 hard limit and above its 620,000 target. Consumer hosted CI was reported blocked by account payment/spending restrictions. These are specific follow-ups; local tests are not hosted CI and source installation is not deployment.
 
-## How to keep the plan current
+## Tracking rules
 
-- Use [tracker #1](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/1) as the single checklist. Every package has acceptance criteria, dependencies and a next action. Use one status label: `status:ready`, `status:in-progress`, `status:blocked` or `status:deferred`; closed issues record completed work.
-- Update the owning issue when starting work, reaching a material blocker or finishing. Record the exact PR/source revision, applicable test/evidence links, remaining limitation and next action in that issue or its existing PR.
-- Complete one coherent change and relevant verification, then use one independent review when required. Reopen only for an actionable unresolved finding or material change. Do not create tickets for reviews of reviews, receipts or unchanged evidence.
-- Do not retest accepted source merely because it moved or gained another commit hash. Run relevant verification once for actual changes; preserve necessary target/current-source/rollback/running-work safeguards.
-- Distinguish source installed, service running and feature enabled/qualified. A code merge does not close an outstanding provider/device qualification.
-- Close packages when their stated acceptance is met. At the final decision, explicitly defer or retire unselected candidates; they do not require implementation to finish this pilot. No automatic publishing, provider activation, destructive cleanup or recurring AI progress review is part of this plan.
+- Tracker #1 is the single checklist. Every work package links its acceptance criteria, dependency, coordinator and next action. Use one live status label per open issue: ready, in-progress, blocked or deferred; closed issues hold completion evidence.
+- Update the owning issue at meaningful transitions with exact source/PR, applicable evidence, remaining blocker, responsible party and next action. Use main's plan as the canonical scope/order reference; historical proposals remain linked design inputs.
+- Finish a coherent change and relevant checks once, then one independent review when required. Reopen only for an unresolved actionable finding or material change. No review-of-review chain, trivial receipt tickets or recurring AI progress reviews.
+- Preserve the live evaluation, primary/active/dirty work and unique ignored evidence. Native Linux work remains on ext4; Windows work remains Windows-native. Worktree retention and any cleanup follow the standing lifecycle policy.
+- Close an issue only when its actual criteria are met or its explicitly authorised scope is dispositioned. Keep human/provider/account/calendar outcomes open when unavailable. Close tracker #1 only after delivery, the actual experiment decision and every remaining disposition are settled.
 
 ## Design references
 
