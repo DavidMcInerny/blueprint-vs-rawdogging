@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src app.config.ts",
     "test": "vitest run",
-    "check": "npm run typecheck && npm run lint && npm run format:check && node scripts/verify-blueprint.mjs && node scripts/verify-boundaries.mjs && node scripts/verify-architecture.mjs && node scripts/verify-accessibility.mjs && npm run assets:check && npm test",
+    "check": "node scripts/check-app.mjs",
     "build:web": "node scripts/clean-web.mjs && expo export --platform web && node scripts/verify-web.mjs",
     "export:native": "expo export --platform ios --platform android --output-dir dist-native",
     "test:e2e": "playwright test",
@@ -31,7 +31,9 @@
     "build:preview:android": "node scripts/release.mjs build preview android",
     "build:preview:ios": "node scripts/release.mjs build preview ios",
     "build:production:android": "node scripts/release.mjs build production android",
-    "build:production:ios": "node scripts/release.mjs build production ios"
+    "build:production:ios": "node scripts/release.mjs build production ios",
+    "check:shell": "node scripts/check-app.mjs --with-shell",
+    "test:e2e:shell": "playwright test shell.spec.ts"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",

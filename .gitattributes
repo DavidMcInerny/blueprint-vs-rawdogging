@@ -3,6 +3,10 @@
 *.bash text eol=lf
 *.zsh text eol=lf
 install.sh text eol=lf
+# Linux extensionless entrypoints (including native projects generated later).
+**/gradlew text eol=lf
+**/entrypoint text eol=lf
+**/docker-entrypoint text eol=lf
 *.png binary
 *.jpg binary
 *.jpeg binary

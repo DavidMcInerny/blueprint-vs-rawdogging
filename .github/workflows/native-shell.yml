@@ -50,15 +50,21 @@ jobs:
       - run: npx expo prebuild --platform ios --no-install
       - run: pod install --project-directory=ios
       - name: Compile simulator release
-        run: xcodebuild -workspace ios/Gather.xcworkspace -scheme Gather -configuration Release -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build/simulator CODE_SIGNING_ALLOWED=NO build > build-ios.log 2>&1
+        run: |
+          workspace=$(node -e "const fs=require('node:fs'); const w=fs.readdirSync('ios').filter(n=>n.endsWith('.xcworkspace')); if(w.length!==1) throw Error('Expected one iOS workspace'); console.log('ios/'+w[0]);")
+          scheme=$(basename "$workspace" .xcworkspace)
+          xcodebuild -workspace "$workspace" -scheme "$scheme" -configuration Release -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build/simulator CODE_SIGNING_ALLOWED=NO build > build-ios.log 2>&1
       - name: Boot and launch
         run: |
           xcrun simctl list devices available --json > devices.json
           device=$(node -e "const d=require('./devices.json'); console.log(Object.values(d.devices).flat().find(v=>v.name.startsWith('iPhone')).udid)")
           xcrun simctl boot "$device"
           xcrun simctl bootstatus "$device" -b
-          xcrun simctl install "$device" build/simulator/Build/Products/Release-iphonesimulator/Gather.app
-          xcrun simctl launch "$device" com.example.gather
+          app=$(node -e "const fs=require('node:fs'); const p='build/simulator/Build/Products/Release-iphonesimulator'; const a=fs.readdirSync(p).filter(n=>n.endsWith('.app')); if(a.length!==1) throw Error('Expected one built iOS app'); console.log(p+'/'+a[0]);")
+          app_id=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$app/Info.plist")
+          echo "APP_ID=$app_id" >> "$GITHUB_ENV"
+          xcrun simctl install "$device" "$app"
+          xcrun simctl launch "$device" "$app_id"
           xcrun simctl io "$device" screenshot simulator-launch.png
       - name: Install pinned Maestro
         run: |
@@ -67,7 +73,7 @@ jobs:
           shasum -a 256 -c checksums_sha256.txt
           unzip -q maestro.zip -d build/maestro
       - name: Native workflow smoke
-        run: build/maestro/maestro/bin/maestro test -e APP_ID=com.example.gather e2e/native/smoke.yaml
+        run: build/maestro/maestro/bin/maestro test -e APP_ID="$APP_ID" e2e/native/smoke.yaml
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:

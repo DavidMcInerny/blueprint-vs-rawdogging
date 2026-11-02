@@ -33,7 +33,7 @@ mirrors.set('docs/account-and-notification-workflows.md', [`${references}account
 mirrors.set('docs/shared-capability-adoption.md', [`${references}shared-capability-adoption.md`]);
 mirrors.set('templates/motion-plan.md', [`${references}motion-plan.md`]);
 const sourceRoot = 'codex/skills/mature-app-starter/assets/';
-for (const name of ['verify-architecture', 'verify-accessibility', 'verify-performance', 'release-tools', 'check-api-contracts', 'api-contract-test-kit']) {
+for (const name of ['verify-blueprint', 'verify-boundaries', 'quality-config', 'check-app', 'verify-architecture', 'verify-accessibility', 'verify-performance', 'release-tools', 'check-api-contracts', 'api-contract-test-kit']) {
   mirrors.set(`templates/scripts/${name}.mjs`, [`starters/expo/scripts/${name}.mjs`]);
 }
 mirrors.set(`${sourceRoot}app-baseline/src/components/ui/Presence.tsx`, ['starters/expo/src/components/ui/Presence.tsx']);
