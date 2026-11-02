@@ -1,61 +1,40 @@
 #!/usr/bin/env node
-// Summarize results/results.jsonl into counts, ranges and the Gate 1 verdict.
-import { readFile, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readJson, readRecords, summarizeRecords } from './protocol.mjs';
 
 const evalsDir = fileURLToPath(new URL('../', import.meta.url));
-const resultsFile = path.join(evalsDir, 'results/results.jsonl');
-const lines = (await readFile(resultsFile, 'utf8')).trim().split('\n').filter(Boolean);
-const records = lines.map((l) => JSON.parse(l));
-
-const median = (xs) => {
-  const v = xs.filter((x) => Number.isFinite(x)).sort((a, b) => a - b);
-  return v.length ? v[Math.floor(v.length / 2)] : null;
-};
-const tokens = (r) => (r.usage?.inputTokens ?? 0) + (r.usage?.outputTokens ?? 0) || null;
-
-const tasks = [...new Set(records.map((r) => r.task))].sort();
-const cell = (task, condition) => records.filter((r) => r.task === task && r.condition === condition);
-const passed = (rs) => rs.filter((r) => r.score?.pass).length;
-
-const out = ['# Phase 1 evaluation summary', '', `Records: ${records.length}. Generated ${new Date().toISOString()}.`, ''];
-out.push('| Task | A (bare) | B (Blueprint) | B − A |', '| --- | --- | --- | --- |');
-let totalA = 0;
-let totalB = 0;
-let worstTaskGap = Infinity;
-for (const task of tasks) {
-  const a = cell(task, 'A');
-  const b = cell(task, 'B');
-  totalA += passed(a);
-  totalB += passed(b);
-  const gap = passed(b) - passed(a);
-  if (a.length && b.length) worstTaskGap = Math.min(worstTaskGap, gap);
-  out.push(`| ${task} | ${passed(a)}/${a.length} | ${passed(b)}/${b.length} | ${gap >= 0 ? '+' : ''}${gap} |`);
+const config = await readJson(path.join(evalsDir, 'config.json'));
+const records = await readRecords(path.join(evalsDir, 'results/results.jsonl'));
+const summary = summarizeRecords(config, records);
+const passed = (rs) => rs.filter((r) => r.score.pass).length;
+const shown = (value) => value === null ? 'unknown' : value;
+const out = ['# Phase 1 evaluation summary', '', `Gate 1: **${summary.verdict}**. Valid samples: ${summary.totals.A.runs + summary.totals.B.runs}; unscored attempts: ${summary.invalidAttempts}.`, '',
+  `Protocol: ${config.protocol.id}. Source: ${config.protocol.sourceRevision}. Model: ${config.agent.model}; effort: ${config.agent.effort}.`,
+  `Fingerprints: ${summary.fingerprints.join(', ') || 'none'}. Generated ${new Date().toISOString()}.`, '',
+  '| Task | A (bare) | B (Blueprint) | B − A |', '| --- | --- | --- | --- |'];
+for (const cell of summary.cells) {
+  const gap = passed(cell.B) - passed(cell.A);
+  out.push(`| ${cell.task} | ${passed(cell.A)}/${cell.A.length} | ${passed(cell.B)}/${cell.B.length} | ${gap >= 0 ? '+' : ''}${gap} |`);
 }
-const allA = records.filter((r) => r.condition === 'A');
-const allB = records.filter((r) => r.condition === 'B');
-out.push(`| **Total** | **${totalA}/${allA.length}** | **${totalB}/${allB.length}** | **${totalB - totalA >= 0 ? '+' : ''}${totalB - totalA}** |`);
-out.push('');
-const medTokensA = median(allA.map(tokens));
-const medTokensB = median(allB.map(tokens));
-const medSecsA = median(allA.map((r) => r.agentSeconds));
-const medSecsB = median(allB.map((r) => r.agentSeconds));
-out.push(`Median tokens per run: A ${medTokensA ?? 'n/a'}, B ${medTokensB ?? 'n/a'}. Median agent wall time: A ${medSecsA ?? 'n/a'}s, B ${medSecsB ?? 'n/a'}s.`);
-out.push(`Total recorded cost: A $${allA.reduce((s, r) => s + (r.usage?.costUsd ?? 0), 0).toFixed(2)}, B $${allB.reduce((s, r) => s + (r.usage?.costUsd ?? 0), 0).toFixed(2)} (where the agent reported it).`);
-out.push('');
-
-const complete = allA.length >= 25 && allB.length >= 25;
-const costOk = (medTokensA && medTokensB ? medTokensB <= 1.5 * medTokensA : true) && (medSecsA && medSecsB ? medSecsB <= 1.5 * medSecsA : true);
-const gate1 = totalB - totalA >= 7 && worstTaskGap > -3 && costOk;
-out.push(`## Gate 1 (thesis) — ${complete ? (gate1 ? 'PASS' : 'FAIL') : 'PROVISIONAL (needs 25 runs per condition)'}`);
-out.push('');
-out.push(`- B passes ≥7 more of 25 than A: ${totalB - totalA >= 7 ? 'yes' : `no (${totalB - totalA})`}`);
-out.push(`- B not worse by ≥3 on any task: ${worstTaskGap > -3 ? 'yes' : `no (worst gap ${worstTaskGap})`}`);
-out.push(`- B median tokens/time ≤1.5× A: ${costOk ? 'yes' : 'no'}`);
-out.push('');
-out.push('Quality detail and human-review sample notes belong in the findings note beside this file (plan Appendix D, Phase 1 deliverable).');
-
+out.push(`| **Total** | **${summary.totals.A.passed}/${summary.totals.A.runs}** | **${summary.totals.B.passed}/${summary.totals.B.runs}** | **${summary.delta}** |`, '');
+out.push(`Complete: ${summary.complete}; each of the ten task/condition cells requires exactly ${config.runsPerTaskPerCondition} unique replicates. Duplicate/out-of-matrix records: ${summary.malformed}; input/model/CLI mismatch: ${summary.identityMismatch}.`, '',
+  '| Metric | A | B |', '| --- | --- | --- |');
+for (const [label, key] of [['Median tokens (input + output + cache read + cache creation)', 'medianTokens'], ['Median agent wall seconds', 'medianSeconds'], ['Total list-price equivalent USD', 'costUsd']]) out.push(`| ${label} | ${shown(summary.totals.A[key])} | ${shown(summary.totals.B[key])} |`);
+out.push('', `- B passes at least seven more of 25 than A: ${summary.delta >= 7 ? 'yes' : 'no'} (${summary.delta}).`,
+  `- B is not worse by at least three on any task: ${summary.worstGap > -3 ? 'yes' : 'no'} (worst gap ${summary.worstGap}).`,
+  `- B median tokens and time are at most 1.5× A: ${summary.costOk === null ? 'unknown (missing metrics)' : summary.costOk ? 'yes' : 'no'}.`, '',
+  'Quality uses a shared TypeScript strictness override and a neutral ESLint rule set; app-specific lint rules are not used. Native exports cover iOS and Android bundles, without device/provider qualification.', '',
+  '| Condition | Type errors | Lint errors | Axe violations | Resilience failures |', '| --- | --- | --- | --- | --- |');
+for (const condition of ['A', 'B']) {
+  const rs = records.filter((r) => r.sampleValid && r.condition === condition);
+  const total = (pick) => rs.length && rs.every((r) => Number.isFinite(pick(r))) ? rs.reduce((sum, r) => sum + pick(r), 0) : 'unknown';
+  out.push(`| ${condition} | ${total((r) => r.score.quality?.typeErrors)} | ${total((r) => r.score.quality?.lintErrors)} | ${total((r) => r.score.quality?.axe?.violationCount)} | ${total((r) => r.score.quality?.resilienceFailures)} |`);
+}
+out.push('', 'No-container limitation: sequential Windows-native fresh directories share machine load, network and caches. Costs are reported token list-price equivalents; actual subscription allowance remains the execution constraint.', '', 'Human review minutes for five samples per condition and the final findings/decision are recorded separately; this summary does not invent those observations.');
 const text = out.join('\n') + '\n';
+await mkdir(path.join(evalsDir, 'results'), { recursive: true });
 await writeFile(path.join(evalsDir, 'results/SUMMARY.md'), text);
+await writeFile(path.join(evalsDir, 'results/summary.json'), JSON.stringify(summary, null, 2) + '\n');
 console.log(text);

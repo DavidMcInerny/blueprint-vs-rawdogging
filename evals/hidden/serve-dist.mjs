@@ -29,8 +29,8 @@ createServer(async (req, res) => {
   try {
     const urlPath = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
     const rel = urlPath === '/' ? 'index.html' : urlPath.replace(/^\//, '');
-    const filePath = path.join(root, rel);
-    if (!filePath.startsWith(root)) throw new Error('path escape');
+    const filePath = path.resolve(root, rel);
+    if (filePath !== root && !filePath.startsWith(root + path.sep)) throw new Error('path escape');
     let body;
     let served = filePath;
     try {

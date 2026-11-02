@@ -1,6 +1,6 @@
 # Phase 1 decision record
 
-Current delivery sequence and tickets: [consolidated plan](../proposals/DELIVERY-PLAN.md), [harness corrections #5](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/5) and [scored evaluation #6](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/6). The authorisation and budget boundaries below remain in force.
+Current delivery sequence and tickets: [consolidated plan](../proposals/DELIVERY-PLAN.md), [harness corrections #5](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/5) and [scored evaluation #6](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/6). The later [autonomous execution decisions](../proposals/EXECUTION-DECISIONS.md) supersede this historical record's phase-only commitment, baseline preparation and unavailable human checkpoints. The experiment's pre-results Gate 1 thresholds remain unchanged.
 
 Date: 2 November 2026. Status: **Phase 1 authorised as a standalone commitment.**
 This record settles the eight "Decisions required before Phase 1" in the

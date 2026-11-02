@@ -8,12 +8,16 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { isWin, npm, npx, walkFiles } from './lib.mjs';
+import { neutralQuality } from './neutral-quality.mjs';
+import { remainingDemoFiles, resolvedBrandChecks } from './t1-contract.mjs';
 
 const [task, appDir, outJson] = process.argv.slice(2);
 const skipWeb = process.argv.includes('--skip-web');
 const skipExport = process.argv.includes('--skip-export');
 const evalsDir = fileURLToPath(new URL('../', import.meta.url));
 const checks = [];
+let quality = {};
+let scoringError;
 const check = (name, pass, detail = '') => checks.push({ name, pass: Boolean(pass), detail });
 
 async function exists(p) {
@@ -35,30 +39,32 @@ async function readAllSources() {
   return out;
 }
 
-function typecheck() {
-  const r = npx(['tsc', '--noEmit'], appDir, { capture: true, timeoutMs: 5 * 60 * 1000 });
-  check('typecheck (npx tsc --noEmit)', r.status === 0, r.status === 0 ? '' : String(r.stdout ?? '').slice(-500));
-}
+function typecheck() { check('TypeScript (shared neutral strictness)', quality.typeErrors === 0, `${quality.typeErrors} errors`); }
 
+try {
+if (!['T1', 'T2', 'T3', 'T4', 'T5'].includes(task)) throw new Error(`Unknown task: ${task}`);
 if (!(await exists(path.join(appDir, 'package.json')))) {
   check('app exists with package.json', false, `not found in ${appDir}`);
 } else {
   check('app exists with package.json', true);
+  quality = await neutralQuality(path.resolve(appDir));
   const sources = await readAllSources();
   const allText = sources.map((s) => s.text).join('\n');
   const has = (re) => re.test(allText);
 
   if (task === 'T1') {
     const brand = JSON.parse(await readFile(path.join(evalsDir, 'fixtures/T1/supplied-brand.json'), 'utf8'));
-    check('brand slug applied', has(new RegExp(brand.slug)), brand.slug);
-    check('brand display name applied', has(new RegExp(brand.name)), brand.name);
-    check('home shows app-title testID', has(/app-title/));
+    const resolved = npx(['expo', 'config', '--type', 'public', '--json'], appDir, { capture: true, timeoutMs: 60_000 });
+    if (resolved.error) throw resolved.error;
+    let expoConfig;
+    try { expoConfig = resolved.status === 0 ? JSON.parse(resolved.stdout) : {}; } catch { expoConfig = {}; }
+    quality.resolvedExpoBrand = { name: expoConfig.name, slug: expoConfig.slug, scheme: expoConfig.scheme };
+    const brandChecks = resolvedBrandChecks(expoConfig, brand);
+    for (const key of ['name', 'slug', 'scheme']) check(`resolved Expo ${key} matches supplied brand`, brandChecks[key], JSON.stringify(quality.resolvedExpoBrand));
+    const demos = remainingDemoFiles(sources.map((source) => source.file));
+    check('both templates demo routes/modules removed', demos.length === 0, demos.join(', '));
     check('no notes demo remains', !has(/NotesProvider|RecentNotes|note\/new/));
     typecheck();
-    if (!skipExport) {
-      const r = npx(['expo', 'export', '--platform', 'web'], appDir, { capture: true, timeoutMs: 10 * 60 * 1000 });
-      check('expo export --platform web', r.status === 0, r.status === 0 ? '' : String(r.stdout ?? '').slice(-500));
-    }
   }
 
   if (task === 'T3') {
@@ -81,8 +87,15 @@ if (!(await exists(path.join(appDir, 'package.json')))) {
     typecheck();
   }
 
-  // Web behaviour via hidden Playwright specs (T2-T5).
-  if (['T2', 'T3', 'T4', 'T5'].includes(task)) {
+  // Native bundling is required for every task; no device/provider claim is made.
+  if (!skipExport) {
+    const native = npx(['expo', 'export', '--platform', 'ios', '--platform', 'android', '--output-dir', path.join(path.resolve(appDir), 'dist-native-eval')], appDir, { capture: true, timeoutMs: 10 * 60 * 1000 });
+    await writeFile(path.join(path.dirname(outJson), 'native-export.txt'), String(native.stdout ?? '') + String(native.stderr ?? ''));
+    if (native.error) throw native.error;
+    check('expo export for ios and android', native.status === 0, native.status === 0 ? '' : String(native.stderr ?? native.stdout ?? '').slice(-1000));
+  }
+  // Production web export + hidden behaviour + neutral axe measurements.
+  {
     if (skipWeb) {
       check('web behaviour (hidden Playwright spec)', false, 'skipped with --skip-web: run is unscored on primary behaviour');
     } else {
@@ -90,6 +103,7 @@ if (!(await exists(path.join(appDir, 'package.json')))) {
     }
   }
 }
+} catch (error) { scoringError = error.message; }
 
 async function runWebSpec(specTask) {
   // Serve a production export, not the Metro dev server: dev-server runs
@@ -102,37 +116,49 @@ async function runWebSpec(specTask) {
     capture: true,
     timeoutMs: 10 * 60 * 1000,
   });
+  await writeFile(path.join(path.dirname(outJson), 'web-export.txt'), String(exported.stdout ?? '') + String(exported.stderr ?? ''));
+  if (exported.error) throw exported.error;
+  check('expo export --platform web', exported.status === 0);
   if (exported.status !== 0) return false;
-  const server = spawn('node', [path.join(evalsDir, 'hidden/serve-dist.mjs'), distDir, port], { stdio: 'ignore' });
+  const server = spawn(process.execPath, [path.join(evalsDir, 'hidden/serve-dist.mjs'), distDir, port], { stdio: ['ignore', 'pipe', 'pipe'] });
   try {
-    const deadline = Date.now() + config.web.readyTimeoutSeconds * 1000;
-    let ready = false;
-    while (Date.now() < deadline) {
-      try {
-        const res = await fetch(config.web.url);
-        if (res.ok) {
-          ready = true;
-          break;
-        }
-      } catch {}
-      await new Promise((r) => setTimeout(r, 3000));
-    }
-    if (!ready) return false;
-    const r = spawnSync(isWin ? 'npx.cmd' : 'npx', ['playwright', 'test', `${specTask}.spec.mjs`], {
+    // Require our own child's listening acknowledgement. A pre-existing server
+    // on this port must never be mistaken for this run or killed by the scorer.
+    await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('Evaluation web server did not become ready.')), config.web.readyTimeoutSeconds * 1000);
+      let stderr = '';
+      server.stderr.on('data', (data) => { stderr += data; });
+      server.once('error', (error) => { clearTimeout(timer); reject(error); });
+      server.once('exit', (code) => { clearTimeout(timer); reject(new Error(`Evaluation web server exited ${code}: ${stderr}`)); });
+      server.stdout.on('data', (data) => { if (String(data).includes('serving ')) { clearTimeout(timer); resolve(); } });
+    });
+    const reportFile = path.join(path.dirname(outJson), 'playwright.json');
+    const specsToRun = [`${specTask}.spec.mjs`, 'quality.spec.mjs'];
+    const r = spawnSync(isWin ? 'npx.cmd' : 'npx', ['playwright', 'test', ...specsToRun], {
       cwd: path.join(evalsDir, 'hidden'),
-      env: { ...process.env, EVAL_BASE_URL: config.web.url },
+      env: { ...process.env, EVAL_BASE_URL: config.web.url, EVAL_TASK: specTask, EVAL_REPORT_PATH: reportFile },
       stdio: 'inherit',
       shell: isWin,
       timeout: 10 * 60 * 1000,
     });
+    if (r.error) throw r.error;
+    const report = JSON.parse(await readFile(reportFile, 'utf8'));
+    const specs = [];
+    const visit = (suite) => { specs.push(...(suite.specs ?? [])); for (const nested of suite.suites ?? []) visit(nested); };
+    for (const suite of report.suites ?? []) visit(suite);
+    quality.behaviourTests = specs.map((spec) => ({ title: spec.title, pass: spec.ok }));
+    quality.resilienceFailures = specs.filter((spec) => /fail|corrupt|migrat|persist|memory|motion/i.test(spec.title) && !spec.ok).length;
+    for (const spec of specs) for (const test of spec.tests ?? []) for (const result of test.results ?? []) for (const attachment of result.attachments ?? []) {
+      if (attachment.name === 'neutral-axe' && attachment.body) quality.axe = JSON.parse(Buffer.from(attachment.body, 'base64').toString('utf8'));
+    }
     return r.status === 0;
   } finally {
-    if (isWin && server.pid) spawnSync('taskkill', ['/pid', String(server.pid), '/t', '/f'], { stdio: 'ignore' });
-    else server.kill('SIGTERM');
+    server.kill('SIGTERM');
   }
 }
 
-const result = { task, appDir, pass: checks.every((c) => c.pass), checks };
+const complete = !skipWeb && !skipExport && !scoringError;
+const result = { task, appDir, complete, pass: complete && checks.every((c) => c.pass), checks, quality, scoringError };
 await writeFile(outJson, JSON.stringify(result, null, 2) + '\n');
 console.log(`${task}: ${result.pass ? 'PASS' : 'FAIL'} (${checks.filter((c) => c.pass).length}/${checks.length} checks)`);
 process.exit(result.pass ? 0 : 1);

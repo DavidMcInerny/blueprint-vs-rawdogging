@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+import { activateFocusedFilter, tabTo } from './contracts.mjs';
 
 test('search and category filter combine; empty state shows', async ({ page }) => {
   const externalRequests = [];
@@ -30,11 +31,21 @@ test('no axe violations; search is keyboard reachable', async ({ page }) => {
   await page.goto('/items');
   const axe = await new AxeBuilder({ page }).analyze();
   expect(axe.violations).toEqual([]);
-  await page.keyboard.press('Tab');
-  await page.getByTestId('item-search').focus();
+  expect(await tabTo(page, page.getByTestId('item-search'))).toBe(true);
   await expect(page.getByTestId('item-search')).toBeFocused();
   await page.keyboard.type('trail');
   await expect(page.getByTestId('item-row')).toHaveCount(2);
+});
+
+test('category controls are reachable and operable with the keyboard', async ({ page }) => {
+  await page.goto('/items');
+  await expect(page.getByTestId('item-row')).toHaveCount(12);
+  for (const category of ['food', 'tools', 'outdoors', 'all']) {
+    const filter = page.getByTestId(`item-category-${category}`);
+    expect(await tabTo(page, filter)).toBe(true);
+    await activateFocusedFilter(page, filter);
+    await expect(page.getByTestId('item-row')).toHaveCount(category === 'all' ? 12 : 4);
+  }
 });
 
 test('renders with reduced motion', async ({ browser, baseURL }) => {

@@ -1,13 +1,23 @@
 {
   "agent": {
     "command": "claude",
-    "args": ["-p", "--model", "opus", "--output-format", "json", "--dangerously-skip-permissions"],
+    "model": "claude-opus-5-5",
+    "effort": "high",
+    "args": ["-p", "--model", "claude-opus-5-5", "--effort", "high", "--output-format", "json", "--dangerously-skip-permissions"],
     "promptViaStdin": true,
     "timeoutMinutes": 60
   },
   "conditions": {
-    "A": { "label": "bare agent (create-expo-app)", "base": "bases/A" },
-    "B": { "label": "Blueprint today (create-app from this repo)", "base": "bases/B" }
+    "A": { "label": "bare agent (create-expo-app)", "base": "bases/phase1-749926b-v2/A" },
+    "B": { "label": "Blueprint today (create-app from frozen source)", "base": "bases/phase1-749926b-v2/B" }
+  },
+  "protocol": {
+    "id": "phase1-749926b-v2",
+    "sourceRevision": "749926b2c207af7ba3047492f500d2a9fea1dbb2",
+    "directory": "bases/phase1-749926b-v2",
+    "createExpoApp": "5.0.0",
+    "template": "expo-template-default@57.0.33",
+    "sharedDependencyPolicy": "A uses the exact versions resolved by B's committed lock for every shared dependency; B uses npm ci with that lock."
   },
   "runsPerTaskPerCondition": 5,
   "smokeRunsPerTaskPerCondition": 1,
