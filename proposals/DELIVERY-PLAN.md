@@ -8,10 +8,10 @@ This is the fork's single delivery plan. It consolidates Rev 3, the evaluation, 
 
 **Nine of sixteen work packages are complete. Seven remain open.** Source delivery [PR18](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/pull/18) is merged into fork main at `9f29f46`. Optional agent profiles were subsequently aligned with the authorised model policy at `cdfac2e`.
 
-Two execution lanes are active:
+The frozen evaluation remains active; the reference native correction is delivered:
 
 - **Evaluation, #6:** the ten smoke samples are complete and the remaining forty are running within the recorded fifty-primary-attempt allocation. The frozen source is `749926b`, not current main. Results remain provisional until the complete matrix and unchanged Gate 1 rules are evaluated.
-- **Reference native execution, #9:** [PR19](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/pull/19) fixes a reproduced native Expo Head alert and Android build metaspace exhaustion. Its source review and focused checks passed; the existing native workflow is running at `42f42b1`. Actual consumer signed-candidate/device/provider gates remain separate and open.
+- **Native source delivered, #9:** [PR19](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/pull/19) is merged at `5deca07`. Android full-ABI release compilation passes. iOS compiles/launches and the retry reaches the note form/title input without the prior Head alert; XCTest then times out on keyboard snapshots during body input. Full persistence/relaunch is unqualified. Two XCTest failures end further tool expansion/retries; actual consumer/device/provider gates remain blocked.
 
 All other open packages have concrete external dependencies: upstream merge authority, consumer CI/access, real consumer adoption, or human participation and elapsed observation. Their source preparation is delivered; these missing outcomes are not satisfied by fixtures or documentation.
 
@@ -21,8 +21,7 @@ The user's [execution decisions](EXECUTION-DECISIONS.md) authorise autonomous wo
 
 | Order | Work | Dependency and next action | Responsible party |
 | --- | --- | --- | --- |
-| 1, parallel | #6: finish the frozen comparison and publish the decision | Continue the existing run; audit all fifty primary attempts, publish results/findings and apply unchanged thresholds. Record the planned human-review sample as missing until actually performed. | Fork coordinator; non-author human for human review |
-| 1, parallel | #9: finish the current reference native run | Inspect the existing Android/iOS run at the exact PR19 head, resolve only concrete failures, then merge the accepted correction when its relevant checks pass. This does not close product qualification. | Fork coordinator |
+| 1 | #6: finish the frozen comparison and publish the decision | Continue the existing run; audit all fifty primary attempts, publish results/findings and apply unchanged thresholds. Record the planned human-review sample as missing until actually performed. | Fork coordinator; non-author human for human review |
 | 2, parallel | #3: upstream acceptance; #4: actual consumer delivery | Upstream maintainer decides PR4. Golf account owner resolves hosted CI billing restrictions for PR45; OddsBasket owner supplies the accessible PR51/repository. Reuse accepted extraction and consumer evidence. | Upstream/consumer maintainers and account owners; David coordinates |
 | 3 | #9: qualify enabled product integrations | Use the exact selected consumer candidates and actual provider/device environments. Reuse bounded newer Golf startup evidence only for the source and paths it covers. Keep unused optional integrations deferred. | Consumer release/provider owners |
 | 4 | #13: prove real API adoption and donor disposition | Identify actual Fullstack users; apply the delivered contract/recovery kit to a real remote-consuming product. Obtain the donor owner's migration/retirement decision. | Consumer and Fullstack maintainers |
@@ -44,7 +43,7 @@ Status below is the 2 November execution snapshot; issues are live. David coordi
 | [#6](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/6) | Phase 1 results and decision | in progress | Ten valid smoke samples retained; remaining forty running. Final findings, unchanged Gate 1 decision and real human-review sample remain. |
 | [#7](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/7) | Portable Windows/Linux app creation | complete | Pure-Node installation, maintained-fork bootstrap, collision/link safety and hosted Windows/Linux proof delivered in PR18. |
 | [#8](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/8) | Dependency risks and release readiness | complete | Compatible remediation delivered; residual advisories explicitly recorded. Golf soft-budget follow-up is owning issue48, not a new release gate. |
-| [#9](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/9) | Native/provider qualification | in progress | PR19 reference runtime/build corrections under native execution; actual signed-consumer, device, OTA, payload/consent and provider outcomes remain. |
+| [#9](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/9) | Native/provider qualification | blocked | PR19 source fixes delivered; Android build passes and iOS startup/form path works. Full keyboard/persistence smoke and actual consumer/device/provider outcomes remain unqualified. |
 | [#10](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/10) | Lean template, reference app and plugin | complete | Lean creation default, opt-in demo, canonical reference, machine-level plugin and shorter app instructions delivered. |
 | [#11](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/11) | Choose justified shared distribution boundaries | complete | Source packs/recipes, existing registry and plugin selected; all eleven package candidates dispositioned. No npm release selected or claimed. |
 | [#12](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/12) | Unify checks and shared journeys | complete | Canonical AST policy, timed static/unit check, separate browser shell gate and reusable failure/recovery contracts delivered. |
