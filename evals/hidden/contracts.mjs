@@ -25,11 +25,11 @@ export async function activateFocusedFilter(page, target) {
 
 export function visibleItemsMatch(rowTexts, expectedTitles) {
   if (rowTexts.length !== expectedTitles.length) return false;
-  const unmatched = [...rowTexts];
-  for (const title of expectedTitles) {
-    const index = unmatched.findIndex((text) => text.includes(title));
-    if (index < 0) return false;
-    unmatched.splice(index, 1);
+  const seen = new Set();
+  for (const text of rowTexts) {
+    const matches = expectedTitles.filter((title) => text.includes(title));
+    if (matches.length !== 1 || seen.has(matches[0])) return false;
+    seen.add(matches[0]);
   }
-  return unmatched.length === 0;
+  return seen.size === expectedTitles.length;
 }

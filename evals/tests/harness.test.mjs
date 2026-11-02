@@ -100,7 +100,7 @@ test('a no-op category filter cannot pass on the previous equal-sized category',
   assert.equal(food.length, tools.length);
   assert.equal(visibleItemsMatch(food, tools), false);
   assert.equal(visibleItemsMatch([...tools].reverse(), tools), true);
-  assert.equal(visibleItemsMatch(Array(4).fill(tools.join(' ')), tools), true);
+  assert.equal(visibleItemsMatch(Array(4).fill(tools.join(' ')), tools), false);
   assert.equal(visibleItemsMatch(['Apple corer', 'Apple corer', 'Mixing bowl', 'Pie dish'], tools), false);
 });
 
