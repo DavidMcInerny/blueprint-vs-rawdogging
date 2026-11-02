@@ -53,7 +53,7 @@ The [readiness map](docs/quality-foundation.md#readiness-map-use-the-blueprint-w
 
 Paste this into a new project's task:
 
-> Adopt https://github.com/Simondarcy7/blueprint-vs-rawdogging and follow BLUEPRINT.md strictly. Read it before implementation, install the project instructions, complete the project index and quality contract, then build the first useful workflow. Use Expo + Expo Router + TypeScript with src/app and src/modules. Do not change the stack or required architecture without my explicit direction. Add the structural check to app checks/CI and report actual verification. Preserve existing work and report conflicts before migration. Apply the generic app baseline, record applicability in docs/app-baseline.md, and keep business features and external services scoped to this product brief.
+> Adopt https://github.com/DavidMcInerny/blueprint-vs-rawdogging and follow BLUEPRINT.md strictly. Read it before implementation, install the project instructions, complete the project index and quality contract, then build the first useful workflow. Use Expo + Expo Router + TypeScript with src/app and src/modules. Do not change the stack or required architecture without my explicit direction. Add the structural check to app checks/CI and report actual verification. Preserve existing work and report conflicts before migration. Apply the generic app baseline, record applicability in docs/app-baseline.md, and keep business features and external services scoped to this product brief.
 
 Run `node scripts/verify-blueprint.mjs` from the new app after foundation setup. An instruction-only install should fail. Passing this structural gate does not prove behavior, accessibility or full conformance; the contract requires those checks separately. Existing installs skip customized files and need reviewed updates. See [installation](docs/installation.md).
 
@@ -83,16 +83,18 @@ Run `node scripts/verify-blueprint.mjs` from the new app after foundation setup.
 
 ## One-Command Install
 
+Executable installation commands use the maintained [DavidMcInerny fork](https://github.com/DavidMcInerny/blueprint-vs-rawdogging). The original toolkit comes from [Simondarcy7](https://github.com/Simondarcy7/blueprint-vs-rawdogging); historical source and review links retain that provenance.
+
 Install into an existing or new project:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Simondarcy7/blueprint-vs-rawdogging/main/install.sh | bash -s -- --target my-new-app --agent both
+curl -fsSL https://raw.githubusercontent.com/DavidMcInerny/blueprint-vs-rawdogging/main/install.sh | bash -s -- --target my-new-app --agent both
 ```
 
 Safer clone-first option:
 
 ```sh
-git clone https://github.com/Simondarcy7/blueprint-vs-rawdogging
+git clone https://github.com/DavidMcInerny/blueprint-vs-rawdogging
 cd blueprint-vs-rawdogging
 ./install.sh --target ../my-new-app --agent both
 ```

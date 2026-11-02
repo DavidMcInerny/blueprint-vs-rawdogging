@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Preserve curl/remote bootstrap support. All rendering and collision behavior
 # live in the same Node implementation used by Windows and create-app.mjs.
-repo_url="${BLUEPRINT_VS_RAWDOGGING_REPO:-https://github.com/Simondarcy7/blueprint-vs-rawdogging.git}"
+repo_url="${BLUEPRINT_VS_RAWDOGGING_REPO:-https://github.com/DavidMcInerny/blueprint-vs-rawdogging.git}"
 script_path="${BASH_SOURCE[0]:-$0}"
 repo_root="$(cd "$(dirname "$script_path")" 2>/dev/null && pwd || pwd)"
 tmp_repo=""
