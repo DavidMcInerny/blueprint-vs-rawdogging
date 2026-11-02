@@ -1,0 +1,14 @@
+[
+  { "title": "Apple pie", "category": "food" },
+  { "title": "Banana bread", "category": "food" },
+  { "title": "Sourdough loaf", "category": "food" },
+  { "title": "Trail mix", "category": "food" },
+  { "title": "Apple corer", "category": "tools" },
+  { "title": "Bread knife", "category": "tools" },
+  { "title": "Mixing bowl", "category": "tools" },
+  { "title": "Pie dish", "category": "tools" },
+  { "title": "Hiking boots", "category": "outdoors" },
+  { "title": "Trail map", "category": "outdoors" },
+  { "title": "Rain shell", "category": "outdoors" },
+  { "title": "Water filter", "category": "outdoors" }
+]

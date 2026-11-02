@@ -1,0 +1,16 @@
+{
+  "agent": {
+    "command": "claude",
+    "args": ["-p", "--model", "opus", "--output-format", "json", "--dangerously-skip-permissions"],
+    "promptViaStdin": true,
+    "timeoutMinutes": 60
+  },
+  "conditions": {
+    "A": { "label": "bare agent (create-expo-app)", "base": "bases/A" },
+    "B": { "label": "Blueprint today (create-app from this repo)", "base": "bases/B" }
+  },
+  "runsPerTaskPerCondition": 5,
+  "smokeRunsPerTaskPerCondition": 1,
+  "tasks": ["T1", "T2", "T3", "T4", "T5"],
+  "web": { "url": "http://127.0.0.1:19097", "readyTimeoutSeconds": 60 }
+}
