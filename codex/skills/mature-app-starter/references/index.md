@@ -18,6 +18,7 @@ Load only the file needed for the user's request.
 | MVP boundaries, screen maps, beta scope, or product states | `mvp-boundary-and-screen-map.md` |
 | Uncertain backends, vendors, APIs, AI, analytics, auth, storage, or stubs | `service-boundaries-and-stubs.md` |
 | Environment variables, staging, previews, production, or deployment flow | `runtime-config-and-environments.md` |
+| Source updates, check-command migration, compatibility and recovery | `upgrades.md` |
 | Remote API contracts, operation drift, injected failures and local recovery | `api-contracts.md` |
 | Verification strategy | `testing-strategy.md` |
 | Pull requests, handoffs, or review checklists | `pr-and-handoff-playbook.md` |

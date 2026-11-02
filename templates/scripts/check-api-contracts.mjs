@@ -27,10 +27,16 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const methods = new Set(['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS', 'HEAD', 'PATCH', 'TRACE']);
-const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+const object = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 function routeKey(method, path) {
   if (typeof method !== 'string' || !methods.has(method.toUpperCase())) return null;
-  if (typeof path !== 'string' || !path.startsWith('/') || /[\s?#`]/.test(path) || path.includes('//')) return null;
+  if (
+    typeof path !== 'string' ||
+    !path.startsWith('/') ||
+    /[\s?#`]/.test(path) ||
+    path.includes('//')
+  )
+    return null;
   return `${method.toUpperCase()} ${path}`;
 }
 
@@ -40,12 +46,17 @@ function routeKey(method, path) {
 export function checkApiContracts({ routes, contract, artifact }) {
   const issues = [];
   if (!Array.isArray(routes) || routes.length === 0)
-    return ['Route inventory must be a nonempty array; record API checks N/A for an app without an API.'];
+    return [
+      'Route inventory must be a nonempty array; record API checks N/A for an app without an API.',
+    ];
   if (typeof contract !== 'string') return ['Contract documentation must be text.'];
   const inventory = new Set();
   for (const [index, route] of routes.entries()) {
     const key = object(route) && routeKey(route.method, route.path);
-    if (!key) { issues.push(`Invalid route inventory entry at index ${index}.`); continue; }
+    if (!key) {
+      issues.push(`Invalid route inventory entry at index ${index}.`);
+      continue;
+    }
     if (inventory.has(key)) issues.push(`Duplicate route inventory operation: ${key}`);
     inventory.add(key);
   }
@@ -56,18 +67,25 @@ export function checkApiContracts({ routes, contract, artifact }) {
     if (key) documented.add(key);
   }
   const operations = new Set();
-  if (!object(artifact) || typeof artifact.openapi !== 'string' || !/^3\./.test(artifact.openapi) || !object(artifact.paths)) {
+  if (
+    !object(artifact) ||
+    typeof artifact.openapi !== 'string' ||
+    !/^3\./.test(artifact.openapi) ||
+    !object(artifact.paths)
+  ) {
     issues.push('API artifact must be an OpenAPI 3.x JSON object with inline paths.');
   } else {
     for (const [path, item] of Object.entries(artifact.paths)) {
       if (!routeKey('GET', path) || !object(item)) {
-        issues.push(`Invalid OpenAPI path item: ${path}`); continue;
+        issues.push(`Invalid OpenAPI path item: ${path}`);
+        continue;
       }
       if ('$ref' in item) issues.push(`Resolve OpenAPI path references before checking: ${path}`);
       for (const [method, operation] of Object.entries(item)) {
         if (!methods.has(method.toUpperCase()) || method !== method.toLowerCase()) continue;
         if (!object(operation) || '$ref' in operation) {
-          issues.push(`OpenAPI operation must be inline: ${method.toUpperCase()} ${path}`); continue;
+          issues.push(`OpenAPI operation must be inline: ${method.toUpperCase()} ${path}`);
+          continue;
         }
         operations.add(routeKey(method, path));
       }
@@ -85,21 +103,28 @@ export function checkApiContracts({ routes, contract, artifact }) {
 }
 
 export async function verifyApiContracts(root, env = process.env) {
-  const read = path => readFile(resolve(root, path), 'utf8');
+  const read = (path) => readFile(resolve(root, path), 'utf8');
   const [contract, routes, artifact] = await Promise.all([
     read(env.API_CONTRACT_PATH ?? 'docs/API_CONTRACTS.md'),
     read(env.API_ROUTE_LIST_PATH ?? 'docs/api-routes.json'),
     read(env.API_ARTIFACT_PATH ?? 'docs/openapi.json'),
   ]);
-  return checkApiContracts({ contract, routes: JSON.parse(routes), artifact: JSON.parse(artifact) });
+  return checkApiContracts({
+    contract,
+    routes: JSON.parse(routes),
+    artifact: JSON.parse(artifact),
+  });
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   try {
-    if (process.argv.length > 3) throw new Error('Usage: node scripts/check-api-contracts.mjs [app-root]');
+    if (process.argv.length > 3)
+      throw new Error('Usage: node scripts/check-api-contracts.mjs [app-root]');
     const issues = await verifyApiContracts(resolve(process.argv[2] ?? '.'));
     if (issues.length) {
-      console.error('API contract checks failed:\n' + issues.map(issue => `- ${issue}`).join('\n'));
+      console.error(
+        'API contract checks failed:\n' + issues.map((issue) => `- ${issue}`).join('\n'),
+      );
       process.exitCode = 1;
     } else console.log('API operation inventory, contract and OpenAPI coverage agree.');
   } catch (error) {

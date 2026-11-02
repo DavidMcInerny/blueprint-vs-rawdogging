@@ -7,16 +7,41 @@ import assert from 'node:assert/strict';
  * stable error code and retry policy. Results use the foundation ServiceResult { ok, ... } envelope.
  */
 export async function runApiRecoveryContract({
-  createConsumer, validPayload, invalidPayload, assertSuccess, assertFailure,
-  timeoutMs = 25, caseTimeoutMs = 1000,
+  createConsumer,
+  validPayload,
+  invalidPayload,
+  assertSuccess,
+  assertFailure,
+  timeoutMs = 25,
+  caseTimeoutMs = 1000,
 }) {
   for (const callback of [createConsumer, assertSuccess, assertFailure])
-    assert.equal(typeof callback, 'function', 'Consumer factory and semantic assertions are required.');
-  assert.ok(Number.isInteger(timeoutMs) && timeoutMs > 0 && timeoutMs <= 60_000, 'Invalid request timeout.');
-  assert.ok(Number.isInteger(caseTimeoutMs) && caseTimeoutMs > timeoutMs && caseTimeoutMs <= 60_000, 'Invalid case timeout.');
+    assert.equal(
+      typeof callback,
+      'function',
+      'Consumer factory and semantic assertions are required.',
+    );
+  assert.ok(
+    Number.isInteger(timeoutMs) && timeoutMs > 0 && timeoutMs <= 60_000,
+    'Invalid request timeout.',
+  );
+  assert.ok(
+    Number.isInteger(caseTimeoutMs) && caseTimeoutMs > timeoutMs && caseTimeoutMs <= 60_000,
+    'Invalid case timeout.',
+  );
   const reports = [];
-  const json = payload => new Response(JSON.stringify(payload), { headers: { 'content-type': 'application/json' } });
-  for (const scenario of ['network', 'unavailable', 'unauthorized', 'invalid-json', 'invalid-payload', 'timeout']) {
+  const json = (payload) =>
+    new Response(JSON.stringify(payload), {
+      headers: { 'content-type': 'application/json' },
+    });
+  for (const scenario of [
+    'network',
+    'unavailable',
+    'unauthorized',
+    'invalid-json',
+    'invalid-payload',
+    'timeout',
+  ]) {
     let recovering = false;
     let requests = 0;
     let timeoutAborted = false;
@@ -25,11 +50,18 @@ export async function runApiRecoveryContract({
       requests++;
       if (recovering) return json(validPayload);
       switch (scenario) {
-        case 'network': throw new TypeError('Injected network failure');
-        case 'unavailable': return new Response('{"message":"Unavailable","code":"UNAVAILABLE"}', { status: 503 });
-        case 'unauthorized': return new Response('{"message":"Unauthorized","code":"UNAUTHORIZED"}', { status: 401 });
-        case 'invalid-json': return new Response('{', { headers: { 'content-type': 'application/json' } });
-        case 'invalid-payload': return json(invalidPayload);
+        case 'network':
+          throw new TypeError('Injected network failure');
+        case 'unavailable':
+          return new Response('{"message":"Unavailable","code":"UNAVAILABLE"}', { status: 503 });
+        case 'unauthorized':
+          return new Response('{"message":"Unauthorized","code":"UNAUTHORIZED"}', { status: 401 });
+        case 'invalid-json':
+          return new Response('{', {
+            headers: { 'content-type': 'application/json' },
+          });
+        case 'invalid-payload':
+          return json(invalidPayload);
         case 'timeout': {
           const signal = init.signal ?? input?.signal;
           return new Promise((_, reject) => {
@@ -55,9 +87,16 @@ export async function runApiRecoveryContract({
       try {
         return await Promise.race([
           Promise.resolve().then(action),
-          new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(`${scenario}: consumer did not settle within case timeout`)), caseTimeoutMs); }),
+          new Promise((_, reject) => {
+            timer = setTimeout(
+              () => reject(new Error(`${scenario}: consumer did not settle within case timeout`)),
+              caseTimeoutMs,
+            );
+          }),
         ]);
-      } finally { clearTimeout(timer); }
+      } finally {
+        clearTimeout(timer);
+      }
     }
     try {
       const read = await bounded(() => createConsumer({ fetch: transport, timeoutMs }));
