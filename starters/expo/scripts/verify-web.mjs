@@ -15,7 +15,10 @@ async function walk(root) {
 }
 const files = await walk('dist');
 const pages = files.filter((name) => name.endsWith('.html'));
-if (pages.length < 6) throw new Error('Missing exported routes.');
+for (const route of ['index.html', 'settings.html', 'support.html', '+not-found.html']) {
+  if (!files.includes(path.join('dist', route)))
+    throw new Error(`Missing exported route: ${route}`);
+}
 for (const page of pages) {
   let html = await readFile(page, 'utf8');
   if (page.endsWith('_sitemap.html')) {
