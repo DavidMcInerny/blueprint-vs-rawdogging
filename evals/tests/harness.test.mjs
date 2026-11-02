@@ -5,8 +5,13 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { hashDirectory, inputIdentity, parseAgentOutput, plannedSamples, readRecords, summarizeRecords } from '../runner/protocol.mjs';
+import { createRequire } from 'node:module';
+import { agentInvocationOutcome, assertInvocationAvailable, hashDirectory, inputIdentity, parseAgentOutput, plannedSamples, readRecords, summarizeRecords } from '../runner/protocol.mjs';
 import { neutralQuality } from '../runner/neutral-quality.mjs';
+import { remainingDemoFiles, resolvedBrandChecks } from '../runner/t1-contract.mjs';
+import { activateFocusedFilter, inspectBrandHome, tabTo } from '../hidden/contracts.mjs';
+const require = createRequire(new URL('../hidden/package.json', import.meta.url));
+const { chromium } = require('@playwright/test');
 
 const config = { tasks: ['T1', 'T2', 'T3', 'T4', 'T5'], conditions: { A: {}, B: {} }, runsPerTaskPerCondition: 5 };
 const record = (task, condition, n, pass = false) => ({ runId: `${task}-${condition}-${n}`, task, condition, n, sampleValid: true, inputs: { fingerprint: 'frozen' }, score: { complete: true, pass }, usage: { totalTokens: 100, costUsd: 1 }, agentSeconds: 10 });
@@ -21,12 +26,72 @@ test('full resumes the missing 40 samples after smoke and is idempotent', () => 
   assert.deepEqual(plannedSamples(config, complete(), { perCell: 5, fingerprint: 'frozen' }), []);
 });
 
-test('invalid scoring attempts are retried; duplicate samples and changed inputs stop scheduling', () => {
-  const bad = { ...record('T1', 'A', 1), sampleValid: false, error: 'scorer interrupted' };
+test('score-only recovery stays pending; duplicate samples and changed inputs stop scheduling', () => {
+  const bad = { ...record('T1', 'A', 1), agentInvoked: true, agentFinished: true, sampleValid: false, error: 'scorer interrupted' };
   assert.equal(plannedSamples(config, [bad], { perCell: 1, fingerprint: 'frozen' }).length, 10);
   assert.throws(() => plannedSamples(config, [record('T1', 'A', 1), record('T1', 'A', 1)], { perCell: 5, fingerprint: 'frozen' }), /Duplicate/);
   assert.throws(() => plannedSamples(config, [record('T1', 'A', 1)], { perCell: 5, fingerprint: 'new inputs' }), /different inputs/);
   assert.throws(() => plannedSamples(config, [], { perCell: 1, tasks: ['T6'] }), /Unknown task/);
+});
+
+test('invoked timeouts with model evidence count as failures; output failures never resample', () => {
+  const json = JSON.stringify({ modelUsage: { 'claude-opus-5-5': {} }, usage: { input_tokens: 1, output_tokens: 1, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 } });
+  const timedOut = spawnSync(process.execPath, ['-e', `process.stdout.write(${JSON.stringify(json)}); setInterval(() => {}, 1000)`], { encoding: 'utf8', timeout: 1000 });
+  assert.equal(timedOut.error?.code, 'ETIMEDOUT');
+  const outcome = agentInvocationOutcome(timedOut, 'claude-opus-5-5');
+  assert.equal(outcome.agentSucceeded, false);
+  assert.equal(outcome.terminalUnscored, false);
+  const failed = { ...record('T1', 'A', 1, outcome.agentSucceeded), ...outcome, agentInvoked: true, agentFinished: true };
+  assert.equal(plannedSamples(config, [failed], { perCell: 1, fingerprint: 'frozen' }).length, 9);
+  assert.equal(summarizeRecords(config, [failed]).totals.A.passed, 0);
+  const overflow = spawnSync(process.execPath, ['-e', 'process.stdout.write("x".repeat(10000))'], { encoding: 'utf8', maxBuffer: 512 });
+  assert.ok(overflow.error);
+  const terminal = { ...record('T1', 'A', 1), ...agentInvocationOutcome(overflow, 'claude-opus-5-5'), agentInvoked: true, sampleValid: false };
+  assert.equal(terminal.terminalUnscored, true);
+  assert.equal(plannedSamples(config, [terminal], { perCell: 1, fingerprint: 'frozen' }).length, 9);
+  assert.equal(summarizeRecords(config, [terminal]).verdict, 'INCOMPLETE');
+});
+
+test('durable invoked checkpoints consume replicates and primary budget cannot exceed 50', () => {
+  const interrupted = { ...record('T1', 'A', 1), agentInvoked: true, sampleValid: false, score: undefined };
+  assert.equal(plannedSamples(config, [interrupted], { perCell: 5, fingerprint: 'frozen' }).length, 49);
+  assert.throws(() => assertInvocationAvailable(config, [interrupted], interrupted, 'frozen'), /already consumed/);
+  const invoked = complete().map((r) => ({ ...r, agentInvoked: true, agentFinished: true }));
+  assert.throws(() => assertInvocationAvailable(config, invoked, { task: 'T1', condition: 'A', n: 6 }, 'frozen'), /budget exhausted \(50\)/);
+  assert.deepEqual(plannedSamples(config, invoked, { perCell: 5, fingerprint: 'frozen' }), []);
+});
+
+test('T1 checks resolved configuration and actual demo files, not copied brand text', () => {
+  const brand = { name: 'Eval Brand', slug: 'eval-brand-app', scheme: 'eval-brand-app' };
+  assert.deepEqual(resolvedBrandChecks({ name: 'Wrong', slug: 'wrong', scheme: 'wrong', extra: { copiedBrand: brand } }, brand), { name: false, slug: false, scheme: false });
+  assert.deepEqual(resolvedBrandChecks({ ...brand, scheme: 'wrong' }, brand), { name: true, slug: true, scheme: false });
+  assert.deepEqual(resolvedBrandChecks({ ...brand, scheme: [brand.scheme] }, brand), { name: true, slug: true, scheme: true });
+  const demos = ['src/app/explore.tsx', 'app/(tabs)/explore.tsx', 'app/modal.tsx', 'src/app/(tabs)/notes.tsx', 'src/app/note/new.tsx', 'src/modules/notes/store.ts'];
+  assert.deepEqual(remainingDemoFiles([...demos, 'src/app/index.tsx', 'src/app/settings.tsx']), demos);
+});
+
+test('browser contracts reject wrong home text, unreachable controls and click-only filters', async (t) => {
+  const browser = await chromium.launch({ headless: true });
+  t.after(() => browser.close());
+  const page = await browser.newPage();
+  const brand = { name: 'Eval Brand' };
+  await page.setContent('<h1 data-testid="app-title">Wrong title</h1><script type="application/json">{"name":"Eval Brand"}</script>');
+  assert.equal((await inspectBrandHome(page, brand)).pass, false);
+  await page.setContent('<h1 data-testid="app-title">Eval Brand</h1><a href="https://example.test/explore">Demo</a>');
+  assert.equal((await inspectBrandHome(page, brand)).pass, false);
+  await page.setContent('<h1 data-testid="app-title">Eval Brand</h1>');
+  assert.equal((await inspectBrandHome(page, brand)).pass, true);
+  await page.setContent('<input data-testid="search" tabindex="-1"><button>Other</button>');
+  assert.equal(await tabTo(page, page.getByTestId('search'), 5), false);
+  await page.setContent('<input data-testid="search"><button data-testid="filter" onclick="document.body.dataset.active=\'yes\'">Food</button>');
+  assert.equal(await tabTo(page, page.getByTestId('search')), true);
+  assert.equal(await tabTo(page, page.getByTestId('filter')), true);
+  await activateFocusedFilter(page, page.getByTestId('filter'));
+  assert.equal(await page.locator('body').getAttribute('data-active'), 'yes');
+  await page.setContent('<div data-testid="filter" role="button" tabindex="0" onclick="document.body.dataset.active=\'yes\'">Click only</div>');
+  assert.equal(await tabTo(page, page.getByTestId('filter')), true);
+  await activateFocusedFilter(page, page.getByTestId('filter'));
+  assert.equal(await page.locator('body').getAttribute('data-active'), null);
 });
 
 test('aggregate count cannot pass an incomplete or over-sampled task matrix', () => {

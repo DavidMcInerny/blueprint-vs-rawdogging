@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 
 import { isWin, npm, npx, walkFiles } from './lib.mjs';
 import { neutralQuality } from './neutral-quality.mjs';
+import { remainingDemoFiles, resolvedBrandChecks } from './t1-contract.mjs';
 
 const [task, appDir, outJson] = process.argv.slice(2);
 const skipWeb = process.argv.includes('--skip-web');
@@ -53,9 +54,15 @@ if (!(await exists(path.join(appDir, 'package.json')))) {
 
   if (task === 'T1') {
     const brand = JSON.parse(await readFile(path.join(evalsDir, 'fixtures/T1/supplied-brand.json'), 'utf8'));
-    check('brand slug applied', has(new RegExp(brand.slug)), brand.slug);
-    check('brand display name applied', has(new RegExp(brand.name)), brand.name);
-    check('home shows app-title testID', has(/app-title/));
+    const resolved = npx(['expo', 'config', '--type', 'public', '--json'], appDir, { capture: true, timeoutMs: 60_000 });
+    if (resolved.error) throw resolved.error;
+    let expoConfig;
+    try { expoConfig = resolved.status === 0 ? JSON.parse(resolved.stdout) : {}; } catch { expoConfig = {}; }
+    quality.resolvedExpoBrand = { name: expoConfig.name, slug: expoConfig.slug, scheme: expoConfig.scheme };
+    const brandChecks = resolvedBrandChecks(expoConfig, brand);
+    for (const key of ['name', 'slug', 'scheme']) check(`resolved Expo ${key} matches supplied brand`, brandChecks[key], JSON.stringify(quality.resolvedExpoBrand));
+    const demos = remainingDemoFiles(sources.map((source) => source.file));
+    check('both templates demo routes/modules removed', demos.length === 0, demos.join(', '));
     check('no notes demo remains', !has(/NotesProvider|RecentNotes|note\/new/));
     typecheck();
   }
@@ -126,7 +133,7 @@ async function runWebSpec(specTask) {
       server.stdout.on('data', (data) => { if (String(data).includes('serving ')) { clearTimeout(timer); resolve(); } });
     });
     const reportFile = path.join(path.dirname(outJson), 'playwright.json');
-    const specsToRun = specTask === 'T1' ? ['quality.spec.mjs'] : [`${specTask}.spec.mjs`, 'quality.spec.mjs'];
+    const specsToRun = [`${specTask}.spec.mjs`, 'quality.spec.mjs'];
     const r = spawnSync(isWin ? 'npx.cmd' : 'npx', ['playwright', 'test', ...specsToRun], {
       cwd: path.join(evalsDir, 'hidden'),
       env: { ...process.env, EVAL_BASE_URL: config.web.url, EVAL_TASK: specTask, EVAL_REPORT_PATH: reportFile },

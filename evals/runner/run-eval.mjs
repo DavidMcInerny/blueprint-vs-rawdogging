@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { copyDir, isWin, npm } from './lib.mjs';
-import { inputIdentity, parseAgentOutput, plannedSamples, readJson, readRecords, sampleKey, sha256 } from './protocol.mjs';
+import { agentInvocationOutcome, assertInvocationAvailable, inputIdentity, plannedSamples, readJson, readRecords, sampleKey, sha256 } from './protocol.mjs';
 
 const evalsDir = fileURLToPath(new URL('../', import.meta.url));
 const config = await readJson(path.join(evalsDir, 'config.json'));
@@ -37,6 +37,27 @@ async function promptFor(task, condition) {
 const resultsDir = path.join(evalsDir, 'results');
 const resultsFile = path.join(resultsDir, 'results.jsonl');
 const records = await readRecords(resultsFile);
+// An interruption can happen after invocation but before the result append.
+// Those durable checkpoints reserve their replicate, too.
+async function includeUnloggedAttempts({ persist = false } = {}) {
+  const runs = path.join(evalsDir, 'runs');
+  if (!(await exists(runs))) return;
+  for (const entry of await readdir(runs)) {
+    const file = path.join(runs, entry, 'attempt.json');
+    if (!(await exists(file))) continue;
+    const record = await readJson(file);
+    if (record.agentInvoked && !records.some((r) => r.runId === record.runId)) {
+      if (!record.agentFinished) {
+        record.terminalUnscored = true;
+        record.sampleValid = false;
+        record.error ??= 'Primary invocation was interrupted before a model-proven completion checkpoint; replicate consumed without replacement.';
+      }
+      records.push(record);
+      if (persist) await appendFile(resultsFile, JSON.stringify(record) + '\n');
+    }
+  }
+}
+await includeUnloggedAttempts();
 let inputs;
 try { inputs = await inputIdentity(evalsDir, config); }
 catch (error) {
@@ -94,6 +115,7 @@ async function recoverableAttempt(sample) {
 try {
   // The lock may have become available after another runner appended results.
   records.splice(0, records.length, ...await readRecords(resultsFile));
+  await includeUnloggedAttempts({ persist: true });
   matrix = plannedSamples(config, records, { perCell, tasks, conditions, fingerprint: inputs.fingerprint });
   if (records.some((r) => r.sampleValid && r.cliVersion !== cli.stdout.trim())) throw new Error('Agent CLI version changed during the experiment. Preserve existing results and resolve the protocol change first.');
   for (const sample of matrix) {
@@ -115,15 +137,21 @@ try {
         Object.assign(record, await prepareWorkspace(sample.task, sample.condition, workspace));
         const prompt = await promptFor(sample.task, sample.condition);
         record.promptSha256 = sha256(prompt);
+        assertInvocationAvailable(config, records, sample, inputs.fingerprint);
+        record.agentInvoked = true;
+        record.agentInvokedAt = new Date().toISOString();
         await writeFile(attemptFile, JSON.stringify(record, null, 2) + '\n');
         const started = Date.now();
         const r = spawnSync(cmd, config.agent.args, { cwd: workspace, input: prompt, encoding: 'utf8', timeout: config.agent.timeoutMinutes * 60_000, maxBuffer: 64 * 1024 * 1024 });
         const raw = r.stdout ?? '';
         await writeFile(path.join(runDir, 'agent-output.txt'), raw);
         await writeFile(path.join(runDir, 'agent-stderr.txt'), r.stderr ?? '');
-        Object.assign(record, { agentSeconds: (Date.now() - started) / 1000, agentExit: r.status, agentSignal: r.signal }, parseAgentOutput(raw, config.agent.model));
+        Object.assign(record, { agentSeconds: (Date.now() - started) / 1000 }, agentInvocationOutcome(r, config.agent.model));
         allowanceFailure = /usage limit|rate_limit_error|you.ve (?:hit|reached|used).*limit|out of extra usage/i.test(raw + (r.stderr ?? ''));
-        if (r.error) throw new Error(`Agent process failed: ${r.error.message}`);
+        // Any invoked timeout/output failure consumes the assigned replicate.
+        // With actual model evidence, retain it as a scored failure; without
+        // that evidence leave a terminal unscored outcome, never a replacement.
+        if (record.metadataError || allowanceFailure) record.terminalUnscored = true;
         if (allowanceFailure) throw new Error('Subscription allowance exhausted; stop this batch without changing billing or credentials.');
         if (record.metadataError) throw new Error(record.metadataError);
         record.agentFinished = true;
@@ -134,7 +162,7 @@ try {
       if (scorer.error) throw new Error(`Scorer failed: ${scorer.error.message}`);
       record.score = await readJson(scoreOut);
       if (!record.score.complete && !skipWeb) throw new Error(`Scoring incomplete: ${record.score.scoringError ?? 'required checks were skipped'}`);
-      record.score.pass = record.score.pass && record.agentExit === 0 && record.agentResult?.isError !== true;
+      record.score.pass = record.score.pass && record.agentSucceeded;
       record.sampleValid = record.score.complete === true;
       record.finishedAt = new Date().toISOString();
       await writeFile(attemptFile, JSON.stringify(record, null, 2) + '\n');

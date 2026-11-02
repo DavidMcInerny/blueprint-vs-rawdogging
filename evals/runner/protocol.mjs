@@ -44,18 +44,33 @@ export async function readRecords(file) {
 
 export function sampleKey(record) { return `${record.task}/${record.condition}/${record.n}`; }
 export function validSample(record) { return record.sampleValid === true && !record.error && !record.metadataError && record.score?.complete === true && typeof record.score.pass === 'boolean'; }
+export function consumedSample(record) { return validSample(record) || record.terminalUnscored === true || (record.agentInvoked === true && !record.agentFinished); }
+
+export function assertInvocationAvailable(config, records, sample, fingerprint) {
+  const invoked = records.filter((r) => r.agentInvoked && r.inputs?.fingerprint === fingerprint);
+  if (invoked.some((r) => sampleKey(r) === sampleKey(sample))) throw new Error(`Primary invocation already consumed: ${sampleKey(sample)}. Only score-only recovery is permitted.`);
+  const limit = config.tasks.length * Object.keys(config.conditions).length * config.runsPerTaskPerCondition;
+  if (new Set(invoked.map((r) => r.runId)).size >= limit) throw new Error(`Primary invocation budget exhausted (${limit}); no replacement attempts are permitted.`);
+}
 
 export function plannedSamples(config, records, { perCell, tasks = config.tasks, conditions = Object.keys(config.conditions), fingerprint } = {}) {
   for (const task of tasks) if (!config.tasks.includes(task)) throw new Error(`Unknown task: ${task}`);
   for (const condition of conditions) if (!config.conditions[condition]) throw new Error(`Unknown condition: ${condition}`);
   const occupied = new Set();
+  const invokedKeys = new Map();
   for (const record of records) {
-    if (!validSample(record)) continue;
+    if (!consumedSample(record) && !record.agentInvoked) continue;
     if (record.inputs?.fingerprint !== fingerprint) throw new Error(`Existing scored run ${record.runId} has different inputs. Do not mix experiments.`);
     if (!config.tasks.includes(record.task) || !config.conditions[record.condition] || !Number.isInteger(record.n) || record.n < 1 || record.n > config.runsPerTaskPerCondition) throw new Error(`Out-of-matrix sample: ${sampleKey(record)}`);
     const key = sampleKey(record);
-    if (occupied.has(key)) throw new Error(`Duplicate valid sample: ${key}`);
-    occupied.add(key);
+    if (record.agentInvoked) {
+      if (invokedKeys.has(key) && invokedKeys.get(key) !== record.runId) throw new Error(`Duplicate primary invocation: ${key}`);
+      invokedKeys.set(key, record.runId);
+    }
+    if (consumedSample(record)) {
+      if (occupied.has(key) && validSample(record)) throw new Error(`Duplicate valid sample: ${key}`);
+      occupied.add(key);
+    }
   }
   const pending = [];
   for (let n = 1; n <= perCell; n++) for (const task of tasks) {
@@ -88,6 +103,11 @@ export function parseAgentOutput(raw, requestedModel) {
     agentResult: { type: parsed.type, subtype: parsed.subtype, isError: parsed.is_error, sessionId: parsed.session_id, stopReason: parsed.stop_reason },
     metadataError: models.length && models.every((model) => model === requestedModel) ? undefined : `Actual model identity missing or differs from ${requestedModel}: ${models.join(', ') || 'missing'}`,
   };
+}
+
+export function agentInvocationOutcome(result, requestedModel) {
+  const parsed = parseAgentOutput(result.stdout ?? '', requestedModel);
+  return { ...parsed, agentExit: result.status, agentSignal: result.signal, agentProcessError: result.error?.message, agentSucceeded: result.status === 0 && !result.error && parsed.agentResult?.isError !== true, terminalUnscored: Boolean(parsed.metadataError) };
 }
 
 export function summarizeRecords(config, records) {
