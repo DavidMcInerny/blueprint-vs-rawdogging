@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=22.18.0"
+    "node": "^22.18.0 || ^24.3.0"
   },
   "scripts": {
     "test": "node scripts/sync-references.mjs --check && npm run shell:check && node --test tests/*.test.mjs",
@@ -16,7 +16,7 @@
     "shell:sync": "node scripts/sync-product-capabilities.mjs --bundle app-shell --target starters/expo/src/foundation/blueprint-shell --write"
   },
   "devDependencies": {
-    "typescript": "~5.9.3",
+    "typescript": "~6.0.3",
     "react": "19.2.3",
     "react-test-renderer": "19.2.3"
   }

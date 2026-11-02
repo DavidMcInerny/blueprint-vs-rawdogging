@@ -25,7 +25,7 @@ test('new packs install into a generated app without replacing its baseline and 
   const installed = run(args, app); assert.equal(installed.status, 0, installed.stderr);
   assert.equal(await readFile(join(app, 'src/lib/asyncWork.ts'), 'utf8'), original);
   assert.equal(await readFile(join(app, 'brand.json'), 'utf8'), brand);
-  const types = run([join(repo, 'node_modules/typescript/bin/tsc'), '--noEmit', '--strict', '--target', 'ES2022', '--module', 'ESNext', '--moduleResolution', 'Bundler', '--allowImportingTsExtensions', '--lib', 'ES2023,DOM',
+  const types = run([join(repo, 'node_modules/typescript/bin/tsc'), '--ignoreConfig', '--noEmit', '--strict', '--target', 'ES2022', '--module', 'ESNext', '--moduleResolution', 'Bundler', '--allowImportingTsExtensions', '--lib', 'ES2023,DOM',
     'src/services/updates/launchUpdate.ts', 'src/services/updates/expoAdapter.ts',
     'src/services/outbox/durableOutbox.ts', 'src/services/analytics/analyticsClient.ts',
     'src/services/observability/sentryReporter.ts', 'src/services/drafts/draftController.ts',
