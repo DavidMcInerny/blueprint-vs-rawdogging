@@ -26,9 +26,14 @@ for (const name of await readdir(new URL('docs/', root))) {
   }
 }
 mirrors.set('templates/product-behavior-spec.md', [`${references}product-behavior-spec.md`]);
+mirrors.set('docs/operational-capabilities.md', [`${references}operational-capabilities.md`]);
+mirrors.set('docs/product-workflow-capabilities.md', [`${references}product-workflow-capabilities.md`]);
+mirrors.set('docs/product-app-shell.md', [`${references}product-app-shell.md`]);
+mirrors.set('docs/account-and-notification-workflows.md', [`${references}account-and-notification-workflows.md`]);
+mirrors.set('docs/shared-capability-adoption.md', [`${references}shared-capability-adoption.md`]);
 mirrors.set('templates/motion-plan.md', [`${references}motion-plan.md`]);
 const sourceRoot = 'codex/skills/mature-app-starter/assets/';
-for (const name of ['verify-architecture', 'verify-accessibility', 'verify-performance', 'release-tools']) {
+for (const name of ['verify-blueprint', 'verify-boundaries', 'quality-config', 'check-app', 'verify-architecture', 'verify-accessibility', 'verify-performance', 'release-tools', 'check-api-contracts', 'api-contract-test-kit']) {
   mirrors.set(`templates/scripts/${name}.mjs`, [`starters/expo/scripts/${name}.mjs`]);
 }
 mirrors.set(`${sourceRoot}app-baseline/src/components/ui/Presence.tsx`, ['starters/expo/src/components/ui/Presence.tsx']);

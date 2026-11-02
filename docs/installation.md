@@ -7,7 +7,7 @@ Use the installer to copy the toolkit into a project.
 ## Recommended
 
 ```sh
-git clone https://github.com/Simondarcy7/blueprint-vs-rawdogging
+git clone https://github.com/DavidMcInerny/blueprint-vs-rawdogging
 cd blueprint-vs-rawdogging
 ./install.sh --target ../my-new-app --agent both --dry-run
 ./install.sh --target ../my-new-app --agent both
@@ -16,18 +16,20 @@ cd blueprint-vs-rawdogging
 ## One Command
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Simondarcy7/blueprint-vs-rawdogging/main/install.sh | bash -s -- --target my-new-app --agent both
+curl -fsSL https://raw.githubusercontent.com/DavidMcInerny/blueprint-vs-rawdogging/main/install.sh | bash -s -- --target my-new-app --agent both
 ```
 
 When run this way, the installer fetches the latest toolkit source into a temporary directory, then
-copies the selected files into your target project.
+copies the selected files into your target project. The bootstrap defaults to the maintained
+`DavidMcInerny/blueprint-vs-rawdogging` fork; set `BLUEPRINT_VS_RAWDOGGING_REPO` to override
+that source explicitly. Original upstream credits and historical source references remain unchanged.
 
 ## Copy The Whole Repo Without History
 
 If you want the whole toolkit as a starting folder rather than installing selected files:
 
 ```sh
-npx degit Simondarcy7/blueprint-vs-rawdogging my-new-app
+npx degit DavidMcInerny/blueprint-vs-rawdogging my-new-app
 ```
 
 This is simple, but it copies the toolkit repo itself. For app projects, the installer is usually a

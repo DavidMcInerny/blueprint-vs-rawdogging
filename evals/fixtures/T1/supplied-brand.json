@@ -1,0 +1,7 @@
+{
+  "name": "Eval Brand",
+  "slug": "eval-brand-app",
+  "scheme": "eval-brand-app",
+  "bundleIdentifier": "com.example.evalbrandapp",
+  "primaryColor": "#123456"
+}

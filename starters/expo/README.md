@@ -1,6 +1,6 @@
-# Runnable Expo shell
+# Runnable reference application
 
-A small, brandable Expo Router application for iOS, Android and web. It includes navigation, persisted appearance and motion preferences, accessible shared controls, loading/empty/error states, a persistent example workflow, tests and release setup. It runs without service accounts. Start with the installed mature-app-starter `references/start-here.md`; choose additional features only from your product brief.
+The canonical runnable reference for a small, brandable Expo Router application for iOS, Android and web. It includes navigation, persisted appearance and motion preferences, accessible shared controls, loading/empty/error states, a persistent example workflow, tests and release setup. It runs without service accounts. Start with the installed mature-app-starter `references/start-here.md`; choose additional features only from your product brief.
 
 ```sh
 npm ci
@@ -8,6 +8,12 @@ npm run web
 # Or: npm start, then open a compatible Expo Go client.
 # For native modules/dev-client validation: use your own development build.
 ```
+
+Default toolkit creation now renders a lean product with Home/Settings/Support and no
+notes state or journeys. Use --with-demo to retain this reference. The transformation
+reuses this tree and its shared shell; there is no second baseline implementation.
+Reusable agent skills/playbooks can be built once with plugin/build.mjs in the toolkit.
+See the toolkit docs/lean-template.md and registry/README.md for source selection.
 
 ## Make it yours
 
@@ -31,7 +37,7 @@ The example assumes a single writer per storage scope. Concurrent-tab or multi-d
 
 - `npm run check`: types, lint, structural/import guards, generated assets and unit tests.
 - `npm run build:web`: static export, metadata/route checks and asset/initial-JavaScript budgets.
-- `npx playwright install chromium` then `npm run test:e2e`: interactions and automated accessibility against the export, at desktop and mobile widths.
+- `npx playwright install chromium` then `npm run test:e2e`: shared shell journeys plus isolated notes interactions and automated accessibility against the export, at desktop and mobile widths.
 - `npm run export:native`: iOS and Android bundles; this is not native compilation or a signed-device test.
 - `npm run doctor`: Expo compatibility checks.
 - `npm run assets`: regenerate default brand assets; `assets:check` never rewrites them.

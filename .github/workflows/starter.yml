@@ -7,7 +7,11 @@ concurrency:
   cancel-in-progress: true
 jobs:
   generated-app:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -16,6 +20,7 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: starters/expo/package-lock.json
+      - run: node scripts/check-script-endings.mjs
       - run: node scripts/create-app.mjs --target ../generated-app --name quality-example --agent both
       - run: npm run check && npm run doctor && npm run build:web
         working-directory: ../generated-app

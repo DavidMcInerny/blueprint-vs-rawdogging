@@ -6,3 +6,7 @@ node_modules/
 dist/
 build/
 coverage/
+evals/bases/
+evals/runs/
+evals/hidden/test-results/
+.playwright-cli/

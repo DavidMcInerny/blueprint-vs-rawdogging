@@ -1,0 +1,12 @@
+{
+  "name": "blueprint-eval-hidden-tests",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.63.0",
+    "@typescript-eslint/parser": "8.69.0",
+    "eslint": "9.39.5",
+    "typescript": "6.0.3"
+  }
+}
