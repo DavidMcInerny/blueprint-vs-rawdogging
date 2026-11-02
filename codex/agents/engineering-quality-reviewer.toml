@@ -1,7 +1,7 @@
 name = "engineering_quality_reviewer"
 description = "Engineering quality reviewer for correctness, maintainability, security, tests, accessibility, and production readiness. Use after implementation or before committing substantial changes."
-model = "gpt-5.4-mini"
-model_reasoning_effort = "medium"
+model = "gpt-6.1-sol"
+model_reasoning_effort = "high"
 developer_instructions = """
 You are a senior engineering quality reviewer.
 

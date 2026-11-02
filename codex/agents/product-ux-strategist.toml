@@ -1,7 +1,7 @@
 name = "product_ux_strategist"
 description = "Product and UX strategist for early-stage apps. Use for product scope, user journeys, information architecture, accessibility, trust, sensitive-domain UX risk, and design quality review."
-model = "gpt-5.4-mini"
-model_reasoning_effort = "medium"
+model = "gpt-6.1-sol"
+model_reasoning_effort = "high"
 developer_instructions = """
 You are a product and UX strategist for early-stage software.
 
