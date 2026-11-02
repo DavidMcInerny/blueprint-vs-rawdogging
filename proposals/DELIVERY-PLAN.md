@@ -2,6 +2,8 @@
 
 Updated 2 November 2026. Backlog owner: David McInerny. Live tracker: [#1](https://github.com/DavidMcInerny/blueprint-vs-rawdogging/issues/1).
 
+Execution update: the user has authorised autonomous work through the entire backlog. [Execution decisions](EXECUTION-DECISIONS.md) record the resulting scope, pilot choices, bounded run budget and parallel implementation policy. The initial status table below is a dated snapshot; linked issues hold live execution status. Later execution decisions supersede earlier phase-only and manual-checkpoint wording.
+
 This is the entry point for the fork's outstanding work. It combines the Rev 3 delivery proposal, its authorised Phase 1 experiment, and the implemented upstream capability/adoption work. GitHub issues hold live status, dependencies and completion evidence; this file holds scope, sequence and decision rules. Older proposals remain design references, not additional mandatory backlogs.
 
 ## Current commitment and boundaries
