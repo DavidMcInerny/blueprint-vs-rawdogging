@@ -24,7 +24,7 @@ export function npx(args, cwd, opts = {}) {
   return run(isWin ? 'npx.cmd' : 'npx', args, { cwd, ...opts });
 }
 
-const DEFAULT_EXCLUDE = new Set(['node_modules', '.git', '.expo', 'dist', 'dist-native', 'coverage', 'test-results', 'playwright-report', 'output']);
+const DEFAULT_EXCLUDE = new Set(['node_modules', '.git', '.expo', 'dist', 'dist-native', 'dist-eval', 'dist-native-eval', 'coverage', 'test-results', 'playwright-report', 'output']);
 
 /** Recursively copy a directory, skipping heavy/generated entries by name at any depth. */
 export async function copyDir(from, to, extraExclude = []) {
