@@ -9,7 +9,7 @@ concurrency:
 jobs:
   android:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     defaults:
       run:
         working-directory: starters/expo
@@ -26,8 +26,22 @@ jobs:
           java-version: 17
       - run: npm ci
       - run: npx expo prebuild --platform android --no-install
-      - run: ./gradlew :app:assembleRelease --no-daemon
+      - name: Compile Android release
         working-directory: starters/expo/android
+        run: |
+          # The cold all-ABI build exhausted the generated 512 MiB metaspace cap.
+          # Bound concurrent workers without changing the generated ABI scope.
+          set -o pipefail
+          ./gradlew :app:assembleRelease --no-daemon --max-workers=2 --stacktrace --console=plain \
+            '-Dorg.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=1024m -XX:+ExitOnOutOfMemoryError -Dfile.encoding=UTF-8' \
+            '-Pkotlin.daemon.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=1024m -XX:+ExitOnOutOfMemoryError' \
+            2>&1 | tee ../build-android.log
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: android-native-build-log
+          path: starters/expo/build-android.log
+          retention-days: 7
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: android-shell-local-signing-only
@@ -63,6 +77,7 @@ jobs:
           app=$(node -e "const fs=require('node:fs'); const p='build/simulator/Build/Products/Release-iphonesimulator'; const a=fs.readdirSync(p).filter(n=>n.endsWith('.app')); if(a.length!==1) throw Error('Expected one built iOS app'); console.log(p+'/'+a[0]);")
           app_id=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$app/Info.plist")
           echo "APP_ID=$app_id" >> "$GITHUB_ENV"
+          echo "IOS_DEVICE_ID=$device" >> "$GITHUB_ENV"
           xcrun simctl install "$device" "$app"
           xcrun simctl launch "$device" "$app_id"
           xcrun simctl io "$device" screenshot simulator-launch.png
@@ -73,7 +88,19 @@ jobs:
           shasum -a 256 -c checksums_sha256.txt
           unzip -q maestro.zip -d build/maestro
       - name: Native workflow smoke
-        run: build/maestro/maestro/bin/maestro test -e APP_ID="$APP_ID" e2e/native/smoke.yaml
+        id: native-smoke
+        run: |
+          build/maestro/maestro/bin/maestro --device "$IOS_DEVICE_ID" test \
+            --debug-output build/maestro-results --test-output-dir build/maestro-results \
+            -e APP_ID="$APP_ID" e2e/native/smoke.yaml
+      - name: Capture native smoke failure state
+        if: failure() && steps.native-smoke.outcome == 'failure'
+        timeout-minutes: 2
+        run: |
+          mkdir -p build/maestro-results
+          xcrun simctl io "$IOS_DEVICE_ID" screenshot build/maestro-results/simulator-failure.png || true
+          build/maestro/maestro/bin/maestro --device "$IOS_DEVICE_ID" hierarchy --no-reinstall-driver \
+            > build/maestro-results/ui-hierarchy.json 2> build/maestro-results/ui-hierarchy.log || true
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
@@ -81,4 +108,5 @@ jobs:
           path: |
             starters/expo/build-ios.log
             starters/expo/simulator-launch.png
+            starters/expo/build/maestro-results/
           retention-days: 7
